@@ -5,15 +5,26 @@
 #include <vector>
 #include <tuple>
 #include <fstream>
+#include <windows.h> 
 
 using namespace std;
 
 void ParseFile(vector<tuple<string,int>>* legalWords);
+void CreateBoard(HANDLE console);
 
+class Tile {
+	public:
+	int colourNo;
+};
 int main()
 {
+	HANDLE  hConsole;
+	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 	vector<tuple<string, int>> myWords;
 	ParseFile(&myWords);
+	cout << 'test' << endl;
+	CreateBoard(hConsole);
 }
 
 void ParseFile(vector<tuple<string, int>>* legalWords)
@@ -79,4 +90,31 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	}
 	cout << "There are: " << amountOfWords << " legal words"<< endl;
 	wordFile.close();
+}
+
+void CreateBoard(HANDLE console)
+{
+
+	Tile boardDim[15][15];
+
+	for (int i = 0; i < 15; i++)
+	{
+		for (int j = 0; j < 15; j++)
+		{
+			Tile tile;
+
+			if (i == 0 && j==0) {
+				tile.colourNo = 4;
+			}
+
+			else 
+			{
+				tile.colourNo = 7;
+			}
+			SetConsoleTextAttribute(console, tile.colourNo);
+			cout << "+ ";
+		}
+		cout << endl;
+	}
+
 }
