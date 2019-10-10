@@ -23,7 +23,6 @@ int main()
 
 	vector<tuple<string, int>> myWords;
 	ParseFile(&myWords);
-	cout << 'test' << endl;
 	CreateBoard(hConsole);
 }
 
@@ -103,18 +102,47 @@ void CreateBoard(HANDLE console)
 		{
 			Tile tile;
 
-			if (i == 0 && j==0) {
+
+			if (( (i == j) || (j == 14 - i) ) && ((i != 0) && (i != 5) && (i != 6) && (i != 8) && (i != 9) && (i != 14)))
+			{
+				tile.colourNo = 13;
+			}
+
+			else if ((i == 0 && j == 3) || (i == 0 && j == 11) 
+				|| (i == 2 && j == 6) || (i == 2 && j == 8) 
+				|| (i == 3 && j == 0) || (i == 3 && j == 7) || (i == 3 && j == 14) 
+				|| (i == 6 && j == 2) || (i == 6 && j == 6) || (i == 6 && j == 8) || (i == 6 && j == 12) 
+				|| (i == 7 && j == 3) || (i == 7 && j == 11)
+				|| (i == 8 && j == 2) || (i == 8 && j == 6) || (i == 8 && j == 8) || (i == 8 && j == 12)
+				|| (i == 11 && j == 0) || (i == 11 && j == 7) || (i == 11 && j == 14)
+				|| (i == 12 && j == 6) || (i == 12 && j == 8)
+				|| (i == 14 && j == 3) || (i == 14 && j == 11))
+			{
+				tile.colourNo = 11;
+			}	
+
+			else if ((i == 1 && j == 5) || (i == 1 && j == 9)
+				|| (i == 5 && j == 0) || (i == 5 && j == 5) || (i == 5 && j == 9) || (i == 5 && j == 13)
+				|| (i == 9 && j == 0) || (i == 9 && j == 5) || (i == 9 && j == 9) || (i == 9 && j == 13)
+				|| (i == 13 && j == 5) || (i == 13 && j == 9))
+			{
+				tile.colourNo = 9;
+			}
+
+			else if ((i == 0 && j==0) || (i == 0 && j == 7) || (i == 0 && j == 14) || (i == 7 && j == 0) || (i == 0 && j == 14) || (i == 14 && j == 0) || (i == 14 && j == 7) || (i == 14 && j == 14)) 
+			{
 				tile.colourNo = 4;
 			}
+
 
 			else 
 			{
 				tile.colourNo = 7;
 			}
 			SetConsoleTextAttribute(console, tile.colourNo);
-			cout << "+ ";
+			cout << char(254) << " ";
 		}
 		cout << endl;
 	}
-
+	SetConsoleTextAttribute(console, 15);
 }
