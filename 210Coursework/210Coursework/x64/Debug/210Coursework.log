@@ -1,3 +1,18 @@
 ﻿  210Coursework.cpp
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(97,7): warning C4101:  'boardDim': unreferenced local variable
-  210Coursework.vcxproj -> C:\Users\bodswor2\Desktop\210Coursework\210Coursework\x64\Debug\210Coursework.exe
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(174,35): error C3867:  'std::vector<std::tuple<std::string,int>,std::allocator<_Ty>>::size': non-standard syntax; use '&' to create a pointer to member
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(174,35): error C3867:         with
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(174,35): error C3867:         [
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(174,35): error C3867:             _Ty=std::tuple<std::string,int>
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(174,35): error C3867:         ]
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(189,66): error C2664:  'int BoardBinarySearch(std::vector<std::tuple<std::string,int>,std::allocator<_Ty>> *,std::string,int,int)': cannot convert argument 1 from 'std::vector<std::tuple<std::string,int>,std::allocator<_Ty>>' to 'std::vector<std::tuple<std::string,int>,std::allocator<_Ty>> *'
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(189,66): error C2664:         with
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(189,66): error C2664:         [
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(189,66): error C2664:             _Ty=std::tuple<std::string,int>
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(189,66): error C2664:         ]
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(189,29): message :  No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(194,62): error C2664:  'int BoardBinarySearch(std::vector<std::tuple<std::string,int>,std::allocator<_Ty>> *,std::string,int,int)': cannot convert argument 1 from 'std::vector<std::tuple<std::string,int>,std::allocator<_Ty>>' to 'std::vector<std::tuple<std::string,int>,std::allocator<_Ty>> *'
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(194,62): error C2664:         with
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(194,62): error C2664:         [
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(194,62): error C2664:             _Ty=std::tuple<std::string,int>
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(194,62): error C2664:         ]
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(194,29): message :  No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called

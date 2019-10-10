@@ -11,6 +11,8 @@ using namespace std;
 
 void ParseFile(vector<tuple<string,int>>* legalWords);
 void CreateBoard(HANDLE console);
+void Play(vector<tuple<string, int>>* legalWords);
+int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
 
 class Tile {
 	public:
@@ -162,4 +164,34 @@ void CreateBoard(HANDLE console)
 		cout << endl;
 	}
 	SetConsoleTextAttribute(console, 15);
+}
+
+void Play(vector<tuple<string, int>>* legalWords)
+{
+	int playedWord;
+	cout << "What is the word that you want to play?" << endl;
+	cin >> playedWord;
+	int listSize = (*legalWords).size;
+	
+}
+
+int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end) 
+{
+	int middle = begin + (begin - end) / 2;
+	
+	if (get<0>((*legalWords)[middle]) == word)
+	{
+		return middle;
+	}
+
+	else if (get<0>((*legalWords)[middle]) > word)
+	{
+		return BoardBinarySearch((*legalWords), word, begin, middle - 1);
+	}
+
+	else
+	{
+		return BoardBinarySearch((*legalWords), word, middle+1, end);
+	}
+		
 }
