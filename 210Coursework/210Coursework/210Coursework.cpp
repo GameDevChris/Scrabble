@@ -15,6 +15,8 @@ void CreateBoard(HANDLE console);
 class Tile {
 	public:
 	int colourNo;
+	int tileValue;
+	int wordValue;
 };
 int main()
 {
@@ -101,13 +103,17 @@ void CreateBoard(HANDLE console)
 		for (int j = 0; j < 15; j++)
 		{
 			Tile tile;
+			
 
-
+			//double word
 			if (( (i == j) || (j == 14 - i) ) && ((i != 0) && (i != 5) && (i != 6) && (i != 8) && (i != 9) && (i != 14)))
 			{
 				tile.colourNo = 13;
+				tile.tileValue = 1;
+				tile.wordValue = 2;
 			}
 
+			//double letter
 			else if ((i == 0 && j == 3) || (i == 0 && j == 11) 
 				|| (i == 2 && j == 6) || (i == 2 && j == 8) 
 				|| (i == 3 && j == 0) || (i == 3 && j == 7) || (i == 3 && j == 14) 
@@ -119,26 +125,37 @@ void CreateBoard(HANDLE console)
 				|| (i == 14 && j == 3) || (i == 14 && j == 11))
 			{
 				tile.colourNo = 11;
+				tile.tileValue = 2;
+				tile.wordValue = 1;
 			}	
 
+			//triple letter
 			else if ((i == 1 && j == 5) || (i == 1 && j == 9)
 				|| (i == 5 && j == 0) || (i == 5 && j == 5) || (i == 5 && j == 9) || (i == 5 && j == 13)
 				|| (i == 9 && j == 0) || (i == 9 && j == 5) || (i == 9 && j == 9) || (i == 9 && j == 13)
 				|| (i == 13 && j == 5) || (i == 13 && j == 9))
 			{
 				tile.colourNo = 9;
+				tile.tileValue = 3;
+				tile.wordValue = 1;
 			}
 
+			//triple word
 			else if ((i == 0 && j==0) || (i == 0 && j == 7) || (i == 0 && j == 14) || (i == 7 && j == 0) || (i == 0 && j == 14) || (i == 14 && j == 0) || (i == 14 && j == 7) || (i == 14 && j == 14)) 
 			{
 				tile.colourNo = 4;
+				tile.tileValue = 1;
+				tile.wordValue = 3;
 			}
 
-
+			//generic tile
 			else 
 			{
 				tile.colourNo = 7;
+				tile.tileValue = 1;
+				tile.wordValue = 1;
 			}
+			boardDim[i][j] = tile;
 			SetConsoleTextAttribute(console, tile.colourNo);
 			cout << char(254) << " ";
 		}
