@@ -28,6 +28,12 @@ int main()
 	vector<tuple<string, int>> myWords;
 	ParseFile(&myWords);
 	CreateBoard(hConsole);
+	Play(&myWords);
+}
+
+void SortVector(vector<tuple<string, int>>* legalWords) 
+{
+
 }
 
 void ParseFile(vector<tuple<string, int>>* legalWords)
@@ -168,30 +174,45 @@ void CreateBoard(HANDLE console)
 
 void Play(vector<tuple<string, int>>* legalWords)
 {
-	int playedWord;
-	cout << "What is the word that you want to play?" << endl;
-	cin >> playedWord;
-	int listSize = (*legalWords).size;
-	
+	string playedWord;
+	int wordIndex = -1;
+
+	while (wordIndex == -1) 
+	{
+		cout << endl;
+		cout << "What is the word that you want to play?" << endl;
+		cin >> playedWord;
+		wordIndex = BoardBinarySearch(legalWords, playedWord, 0, ((*legalWords).size() - 1));
+		if (wordIndex == -1) 
+		{
+			cout << "The given word is illegal" << endl;
+		}
+		
+	}
+	cout << "The word is legal and at index " << wordIndex << " in the table" << endl;	
 }
 
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end) 
 {
-	int middle = begin + (begin - end) / 2;
-	
-	if (get<0>((*legalWords)[middle]) == word)
+	int middle = begin + (end - begin) / 2;
+
+	if (begin > end) 
+	{
+		return -1;
+	}
+	else if (get<0>((*legalWords)[middle]) == word)
 	{
 		return middle;
 	}
 
 	else if (get<0>((*legalWords)[middle]) > word)
 	{
-		return BoardBinarySearch((*legalWords), word, begin, middle - 1);
+		return BoardBinarySearch(legalWords, word, begin, middle - 1);
 	}
 
-	else
+	else if (get<0>((*legalWords)[middle]) < word)
 	{
-		return BoardBinarySearch((*legalWords), word, middle+1, end);
+		return BoardBinarySearch(legalWords, word, middle+1, end);
 	}
 		
 }
