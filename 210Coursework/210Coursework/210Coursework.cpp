@@ -10,9 +10,11 @@
 using namespace std;
 
 void ParseFile(vector<tuple<string,int>>* legalWords);
+//void InsertionSort(vector<tuple<string, int>>* legalWords);
 void CreateBoard(HANDLE console);
 void Play(vector<tuple<string, int>>* legalWords);
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
+void DisplayList(vector<tuple<string, int>>* legalWords);
 
 class Tile {
 	public:
@@ -27,13 +29,32 @@ int main()
 
 	vector<tuple<string, int>> myWords;
 	ParseFile(&myWords);
+	//InsertionSort(&myWords);
+	DisplayList(&myWords);
 	CreateBoard(hConsole);
 	Play(&myWords);
 }
 
-void SortVector(vector<tuple<string, int>>* legalWords) 
+/*void InsertionSort(vector<tuple<string, int>>* legalWords) 
 {
+	for (int i = 1; i < (*legalWords).size(); i++) 
+	{
+		string key = get<0>((*legalWords)[0]);
+		int j = i-1;
+		while ((j >= 0) && (get<0>((*legalWords)[j]) > key)) 
+		{
+			get<0>((*legalWords)[j + 1]) = get<0>((*legalWords)[j]);
+			j -= 1;
+		}
+	}
+}*/
 
+void DisplayList(vector<tuple<string, int>>* legalWords) 
+{
+	for (int i = 0; i < (*legalWords).size(); i++) 
+	{
+		cout << get<0>((*legalWords)[i]) << " " << get<1>((*legalWords)[i]) << endl;
+	}
 }
 
 void ParseFile(vector<tuple<string, int>>* legalWords)
