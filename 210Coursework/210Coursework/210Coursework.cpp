@@ -69,7 +69,7 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	int amountOfWords = 0;
 	string word;
 	ifstream wordFile;
-	wordFile.open("words.txt");
+	wordFile.open("wordTest.txt");
 	if (wordFile.is_open()) 
 	{
 		cout << "OPEN" << endl;
@@ -255,11 +255,21 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid)
 
 	for (i = 0; i < leftLength; i++)
 	{
-		Left.push_back(get<0>((*legalWords)[begin + i]));
+		string word = get<0>((*legalWords)[begin + i]);
+		if (word != "") 
+		{
+			cout << "Word is" << word << endl;
+			Left.push_back(word);
+		}
 	}
 	for (j = 0; j < rightLength; j++)
 	{
-		Right.push_back(get<0>((*legalWords)[mid + 1 + j]));
+		string word = get<0>((*legalWords)[mid + 1 + j]);
+		if (word != "")
+		{
+			cout << "Word is" << word << endl;
+			Right.push_back(word);
+		}
 	}
 
 	i = 0; j = 0; k = begin;
@@ -267,12 +277,18 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid)
 	{
 		if (Left[i] <= Right[j])
 		{
-			get<0>((*legalWords)[k]) = Left[i];
+			if (Left[i] != "")
+			{
+				get<0>((*legalWords)[k]) = Left[i];
+			}
 			i++;
 		}
 		else 
 		{
-			get<0>((*legalWords)[k]) = Right[j];
+			if (Right[j] != "")
+			{
+				get<0>((*legalWords)[k]) = Right[j];
+			}
 			j++;
 		}
 		k++;
@@ -280,14 +296,20 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid)
 
 	while (i < leftLength) 
 	{
-		get<0>((*legalWords)[k]) = Left[i];
+		if (Left[i] != "")
+		{
+			get<0>((*legalWords)[k]) = Left[i];
+		}
 		i++;
 		k++;
 	}
 
 	while (j < rightLength)
 	{
-		get<0>((*legalWords)[k]) = Right[j];
+		if (Right[j] != "")
+		{
+			get<0>((*legalWords)[k]) = Right[j];
+		}
 		j++;
 		k++;
 	}
@@ -297,7 +319,7 @@ void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end)
 {
 	if(begin<end)
 	{
-		int mid = (begin + end) / 2;
+		int mid = (begin + (end-1)) / 2;
 
 		MergeSort(legalWords, begin, mid);
 		MergeSort(legalWords, mid + 1, end);
