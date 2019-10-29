@@ -15,6 +15,8 @@ void CreateBoard(HANDLE console);
 void Play(vector<tuple<string, int>>* legalWords);
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
 void DisplayList(vector<tuple<string, int>>* legalWords);
+void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid);
+void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end);
 
 class Tile {
 	public:
@@ -31,6 +33,11 @@ int main()
 	ParseFile(&myWords);
 	//InsertionSort(&myWords);
 	DisplayList(&myWords);
+
+	MergeSort(&myWords, 0, myWords.size() - 1);
+
+	DisplayList(&myWords);
+
 	CreateBoard(hConsole);
 	Play(&myWords);
 }
@@ -236,4 +243,65 @@ int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int b
 		return BoardBinarySearch(legalWords, word, middle+1, end);
 	}
 		
+}
+
+void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid) 
+{
+	int i, j, k;
+	int leftLength = mid - begin + 1;
+	int rightLength = end - mid;
+
+	vector<string> Left(leftLength), Right(rightLength);
+
+	for (i = 0; i < leftLength; i++)
+	{
+		Left.push_back(get<0>((*legalWords)[begin + i]));
+	}
+	for (j = 0; j < rightLength; j++)
+	{
+		Right.push_back(get<0>((*legalWords)[mid + 1 + j]));
+	}
+
+	i = 0; j = 0; k = begin;
+	while (i < leftLength && j < rightLength)
+	{
+		if (Left[i] <= Right[j])
+		{
+			get<0>((*legalWords)[k]) = Left[i];
+			i++;
+		}
+		else 
+		{
+			get<0>((*legalWords)[k]) = Right[j];
+			j++;
+		}
+		k++;
+	}
+
+	while (i < leftLength) 
+	{
+		get<0>((*legalWords)[k]) = Left[i];
+		i++;
+		k++;
+	}
+
+	while (j < rightLength)
+	{
+		get<0>((*legalWords)[k]) = Right[j];
+		j++;
+		k++;
+	}
+}
+
+void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end) 
+{
+	if(begin<end)
+	{
+		int mid = (begin + end) / 2;
+
+		MergeSort(legalWords, begin, mid);
+		MergeSort(legalWords, mid + 1, end);
+
+		Merge(legalWords, begin, end, mid);
+	}
 }
