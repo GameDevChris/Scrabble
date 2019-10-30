@@ -36,7 +36,7 @@ int main()
 	cout << "Legal word list sorted" << endl;
 	AssignWordValue(&myWords);
 	cout << "Word values assigned" << endl;
-
+	cout << endl;
 	CreateBoard(hConsole);
 	Play(&myWords);
 }
