@@ -10,13 +10,13 @@
 using namespace std;
 
 void ParseFile(vector<tuple<string,int>>* legalWords);
-//void InsertionSort(vector<tuple<string, int>>* legalWords);
 void CreateBoard(HANDLE console);
 void Play(vector<tuple<string, int>>* legalWords);
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
 void DisplayList(vector<tuple<string, int>>* legalWords);
 void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid);
 void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end);
+void AssignWordValue(vector<tuple<string, int>>* legalWords);
 
 class Tile {
 	public:
@@ -31,12 +31,11 @@ int main()
 
 	vector<tuple<string, int>> myWords;
 	ParseFile(&myWords);
-	//InsertionSort(&myWords);
-	DisplayList(&myWords);
-
+	cout << "Legal word list created" << endl;
 	MergeSort(&myWords, 0, myWords.size() - 1);
-
-	DisplayList(&myWords);
+	cout << "Legal word list sorted" << endl;
+	AssignWordValue(&myWords);
+	cout << "Word values assigned" << endl;
 
 	CreateBoard(hConsole);
 	Play(&myWords);
@@ -69,16 +68,10 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	int amountOfWords = 0;
 	string word;
 	ifstream wordFile;
-	wordFile.open("wordTest.txt");
-	if (wordFile.is_open()) 
-	{
-		cout << "OPEN" << endl;
-	}
-
+	wordFile.open("words.txt");
 	while (wordFile >> word) 
 	{
 		int ilegal = 0;
-		int wordValue = 0;
 		tuple<string, int> result;
 		for (int i = 0; i < (int)word.length(); i++) 
 		{
@@ -88,40 +81,8 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 		}
 		if (ilegal == 0) 
 		{
-			for (int i = 0; i < (int)word.length(); i++)
-			{
-				if (word[i] == 'q' || word[i] == 'z')
-				{
-					wordValue += 10;
-				}
-				else if (word[i] == 'd' || word[i] == 'g')
-				{
-					wordValue += 2;
-				}
-				else if (word[i] == 'b' || word[i] == 'c' || word[i] == 'm' || word[i] == 'p')
-				{
-					wordValue += 3;
-				}
-				else if (word[i] == 'f' || word[i] == 'h' || word[i] == 'v' || word[i] == 'w' || word[i] == 'y')
-				{
-					wordValue += 4;
-				}
-				else if (word[i] == 'k')
-				{
-					wordValue += 5;
-				}
-				else if (word[i] == 'j' || word[i] == 'x')
-				{
-					wordValue += 8;
-				}
-				else
-				{
-					wordValue += 1;
-				}
-			}
-			result = make_tuple(word, wordValue);
+			result = make_tuple(word, 0);
 			legalWords->push_back(result);
-			//cout << word << wordValue << endl;
 			amountOfWords++;
 		}
 	}
@@ -251,25 +212,19 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid)
 	int leftLength = mid - begin + 1;
 	int rightLength = end - mid;
 
-	vector<string> Left(leftLength), Right(rightLength);
+	vector<string> Left, Right;
 
 	for (i = 0; i < leftLength; i++)
 	{
 		string word = get<0>((*legalWords)[begin + i]);
-		if (word != "") 
-		{
-			cout << "Word is" << word << endl;
-			Left.push_back(word);
-		}
+		Left.push_back(word);
+		
 	}
 	for (j = 0; j < rightLength; j++)
 	{
 		string word = get<0>((*legalWords)[mid + 1 + j]);
-		if (word != "")
-		{
-			cout << "Word is" << word << endl;
-			Right.push_back(word);
-		}
+		Right.push_back(word);
+		
 	}
 
 	i = 0; j = 0; k = begin;
@@ -277,18 +232,12 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid)
 	{
 		if (Left[i] <= Right[j])
 		{
-			if (Left[i] != "")
-			{
-				get<0>((*legalWords)[k]) = Left[i];
-			}
+			get<0>((*legalWords)[k]) = Left[i];
 			i++;
 		}
 		else 
 		{
-			if (Right[j] != "")
-			{
-				get<0>((*legalWords)[k]) = Right[j];
-			}
+			get<0>((*legalWords)[k]) = Right[j];
 			j++;
 		}
 		k++;
@@ -296,20 +245,14 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid)
 
 	while (i < leftLength) 
 	{
-		if (Left[i] != "")
-		{
-			get<0>((*legalWords)[k]) = Left[i];
-		}
+		get<0>((*legalWords)[k]) = Left[i];
 		i++;
 		k++;
 	}
 
 	while (j < rightLength)
 	{
-		if (Right[j] != "")
-		{
-			get<0>((*legalWords)[k]) = Right[j];
-		}
+		get<0>((*legalWords)[k]) = Right[j];
 		j++;
 		k++;
 	}
@@ -325,5 +268,50 @@ void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end)
 		MergeSort(legalWords, mid + 1, end);
 
 		Merge(legalWords, begin, end, mid);
+	}
+}
+
+void AssignWordValue(vector<tuple<string, int>>* legalWords) 
+{
+	for (int i = 0; i < (*legalWords).size(); i++) 
+	{ 
+		string word = get<0>((*legalWords)[i]);
+		int wordValue = 0;
+		tuple<string, int> result;
+
+		for (int j = 0; j < (int)word.length(); j++)
+		{
+			if (word[j] == 'q' || word[j] == 'z')
+			{
+				wordValue += 10;
+			}
+			else if (word[j] == 'd' || word[j] == 'g')
+			{
+				wordValue += 2;
+			}
+			else if (word[j] == 'b' || word[j] == 'c' || word[j] == 'm' || word[j] == 'p')
+			{
+				wordValue += 3;
+			}
+			else if (word[j] == 'f' || word[j] == 'h' || word[j] == 'v' || word[j] == 'w' || word[j] == 'y')
+			{
+				wordValue += 4;
+			}
+			else if (word[j] == 'k')
+			{
+				wordValue += 5;
+			}
+			else if (word[j] == 'j' || word[j] == 'x')
+			{
+				wordValue += 8;
+			}
+			else
+			{
+				wordValue += 1;
+			}
+		}
+
+		result = make_tuple(word, wordValue);
+		(*legalWords)[i] = result;
 	}
 }
