@@ -9,17 +9,8 @@
 
 using namespace std;
 
-void ParseFile(vector<tuple<string,int>>* legalWords);
-void Play(vector<tuple<string, int>>* legalWords);
-int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
-void DisplayList(vector<tuple<string, int>>* legalWords);
-void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid);
-void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end);
-void AssignWordValue(vector<tuple<string, int>>* legalWords);
-
-
 class Tile {
-	public:
+public:
 	char tileCharacter;
 	int colourNo;
 	int tileValue;
@@ -32,10 +23,10 @@ class Tile {
 	}
 };
 class Board {
-	public:
+public:
 	HANDLE console;
 	Tile tileList[15][15];
-	void FillBoard() 
+	void FillBoard()
 	{
 		for (int i = 0; i < 15; i++)
 		{
@@ -90,7 +81,7 @@ class Board {
 			}
 		}
 	};
-	void ShowBoard() 
+	void ShowBoard()
 	{
 		for (int i = 0; i < 15; i++)
 		{
@@ -105,39 +96,54 @@ class Board {
 	}
 	void InsertWord(string word, int xStart, int yStart, char direction)
 	{
-		if (direction == 'H' || direction == 'h') {
+		if (direction == 'V' || direction == 'v') {
 			for (int i = 0; i < word.length(); i++)
 			{
-				tileList[xStart + i][yStart].tileCharacter = word[i];
+				tileList[(yStart-1) + i][(xStart-1)].tileCharacter = word[i];
 			}
 		}
 		else {
 			for (int i = 0; i < word.length(); i++)
 			{
-				tileList[xStart][yStart + i].tileCharacter = word[i];
+				tileList[(yStart-1)][(xStart-1) + i].tileCharacter = word[i];
 			}
 		}
 		system("CLS");
 		ShowBoard();
+		cout << "The word " << word << " was placed at X= " << xStart << " and Y= " << yStart << endl;
 	}
 	Board() {
 		console = GetStdHandle(STD_OUTPUT_HANDLE);
 	}
 };
+
+void ParseFile(vector<tuple<string,int>>* legalWords);
+void Play(vector<tuple<string, int>>* legalWords, Board playBoard);
+int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
+void DisplayList(vector<tuple<string, int>>* legalWords);
+void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid);
+void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end);
+void AssignWordValue(vector<tuple<string, int>>* legalWords);
+void LoadAnimation();
+
+
 int main()
 {
+	//LoadAnimation();
+	bool isSorted = false;
 	vector<tuple<string, int>> myWords;
 	ParseFile(&myWords);
 	cout << "Legal word list created" << endl;
+
 	MergeSort(&myWords, 0, myWords.size() - 1);
+
 	cout << "Legal word list sorted" << endl;
 	AssignWordValue(&myWords);
 	cout << "Word values assigned" << endl;
 	cout << endl;
 	Board playBoard;
 	playBoard.FillBoard();
-	playBoard.ShowBoard();
-	Play(&myWords);
+	Play(&myWords, playBoard);
 }
 
 void DisplayList(vector<tuple<string, int>>* legalWords) 
@@ -175,7 +181,7 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	wordFile.close();
 }
 
-void Play(vector<tuple<string, int>>* legalWords)
+void Play(vector<tuple<string, int>>* legalWords, Board playBoard)
 {
 	string playedWord;
 	int wordIndex = -1;
@@ -191,16 +197,25 @@ void Play(vector<tuple<string, int>>* legalWords)
 		if (wordIndex == -1)
 		{
 			cout << "The given word is illegal" << endl;
+			system("CLS");
+			playBoard.ShowBoard();
 		}
 	}
-
+	system("CLS");
+	playBoard.ShowBoard();
 	cout << "The word is legal and at index " << wordIndex << " in the table" << endl;	
 	cout << "What is the X start position of the word you want to play?" << endl;
 	cin >> xStart;
+	system("CLS");
+	playBoard.ShowBoard();
 	cout << "What is the Y start position of the word you want to play?" << endl;
 	cin >> yStart;
+	system("CLS");
+	playBoard.ShowBoard();
 	cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
 	cin >> direction;
+	playBoard.InsertWord(playedWord, xStart , yStart, direction);
+	
 }
 
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end) 
@@ -284,8 +299,10 @@ void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end)
 {
 	if(begin<end)
 	{
+		
 		int mid = (begin + (end-1)) / 2;
-
+		cout << "  /-_(^o^)_-\\ " << "\r";
+		cout << "  \\_-(*o*)-_/ " << "\r";
 		MergeSort(legalWords, begin, mid);
 		MergeSort(legalWords, mid + 1, end);
 
@@ -335,5 +352,21 @@ void AssignWordValue(vector<tuple<string, int>>* legalWords)
 
 		result = make_tuple(word, wordValue);
 		(*legalWords)[i] = result;
+	}
+}
+
+void LoadAnimation() 
+{
+	bool isSorted = false;
+	int i = 0;
+	while (i<10000000) 
+	{
+		cout << "  /-_(^o^)_-\\ " << "\r";
+		Sleep(400);
+		//cout << " \--(^=^)-- "  << "\r";
+		//Sleep(400);
+		cout << "  \\_-(*o*)-_/ "  << "\r";
+		Sleep(400);
+		i++;
 	}
 }
