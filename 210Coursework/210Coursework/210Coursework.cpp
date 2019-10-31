@@ -6,6 +6,7 @@
 #include <tuple>
 #include <fstream>
 #include <windows.h> 
+#include <typeinfo>
 
 using namespace std;
 
@@ -121,21 +122,22 @@ void ParseFile(vector<tuple<string,int>>* legalWords);
 void Play(vector<tuple<string, int>>* legalWords, Board playBoard);
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
 void DisplayList(vector<tuple<string, int>>* legalWords);
-void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid);
-void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end);
+void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count);
+void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count);
 void AssignWordValue(vector<tuple<string, int>>* legalWords);
 void LoadAnimation();
 
-
+int COUNT;
 int main()
 {
+	COUNT = 0;
 	//LoadAnimation();
 	bool isSorted = false;
 	vector<tuple<string, int>> myWords;
 	ParseFile(&myWords);
 	cout << "Legal word list created" << endl;
 
-	MergeSort(&myWords, 0, myWords.size() - 1);
+	MergeSort(&myWords, 0, myWords.size() - 1, 0);
 
 	cout << "Legal word list sorted" << endl;
 	AssignWordValue(&myWords);
@@ -197,23 +199,48 @@ void Play(vector<tuple<string, int>>* legalWords, Board playBoard)
 		if (wordIndex == -1)
 		{
 			cout << "The given word is illegal" << endl;
-			system("CLS");
-			playBoard.ShowBoard();
 		}
 	}
 	system("CLS");
 	playBoard.ShowBoard();
 	cout << "The word is legal and at index " << wordIndex << " in the table" << endl;	
+	
 	cout << "What is the X start position of the word you want to play?" << endl;
 	cin >> xStart;
+	while((xStart<1 || xStart >15)||(typeid(xStart)!=typeid(int)))
+	{
+		cout << char(200) << "(" << char(248) << char(239) << char(248) << ")" << char(188)  << " Error, please choose a X between 1 and 15: " << endl;
+		cin >> xStart;
+		system("CLS");
+		playBoard.ShowBoard();
+	}
 	system("CLS");
 	playBoard.ShowBoard();
+
 	cout << "What is the Y start position of the word you want to play?" << endl;
 	cin >> yStart;
+	while (yStart < 1 || yStart >15)
+	{
+		cout << char(200) << "(" << char(248) << char(239) << char(248) << ")" << char(188) << " Error, please choose a Y between 1 and 15: " << endl;
+		cin >> yStart;
+		system("CLS");
+		playBoard.ShowBoard();
+	}
 	system("CLS");
 	playBoard.ShowBoard();
+
 	cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
 	cin >> direction;
+	while (!(direction == 'h' || direction == 'H' || direction == 'v' || direction == 'V'))
+	{
+		cout << char(200) << "(" << char(248) << char(239) << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
+		cin >> direction;
+		system("CLS");
+		playBoard.ShowBoard();
+	}
+	system("CLS");
+	playBoard.ShowBoard();
+
 	playBoard.InsertWord(playedWord, xStart , yStart, direction);
 	
 }
@@ -243,7 +270,7 @@ int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int b
 		
 }
 
-void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid) 
+void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count) 
 {
 	int i, j, k;
 	int leftLength = mid - begin + 1;
@@ -293,20 +320,23 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid)
 		j++;
 		k++;
 	}
+	
 }
 
-void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end) 
+void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count) 
 {
+	COUNT++;
+	if (COUNT == 10000) { cout << " Sorting List.    /-_(^o^)_-\\ " << "\r";}
+	else if (COUNT == 20000) { cout << " Sorting List..   \\_-(*o*)-_/ " << "\r";}
+	else if (COUNT == 30000) { cout << " Sorting List...  /-_(^o^)_-\\ " << "\r";}
+	else if (COUNT == 40000) { cout << " Sorting List.... \\_-(*o*)-_/ " << "\r"; COUNT = 0;}
+	
 	if(begin<end)
 	{
-		
 		int mid = (begin + (end-1)) / 2;
-		cout << "  /-_(^o^)_-\\ " << "\r";
-		cout << "  \\_-(*o*)-_/ " << "\r";
-		MergeSort(legalWords, begin, mid);
-		MergeSort(legalWords, mid + 1, end);
-
-		Merge(legalWords, begin, end, mid);
+		MergeSort(legalWords, begin, mid,count);
+		MergeSort(legalWords, mid + 1, end, count);
+		Merge(legalWords, begin, end, mid, count);
 	}
 }
 
