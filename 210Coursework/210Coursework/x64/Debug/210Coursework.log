@@ -1,5 +1,6 @@
 ﻿  210Coursework.cpp
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(35,43): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(175,86): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(175,86): warning C4267: C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(208) : warning C4715: 'BoardBinarySearch': not all control paths return a value
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(132,43): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(188,86): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(188,86): warning C4267: C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(223) : warning C4715: 'BoardBinarySearch': not all control paths return a value
+  LINK : C:\Users\bodswor2\Desktop\210Coursework\210Coursework\x64\Debug\210Coursework.exe not found or not built by the last incremental link; performing full link
   210Coursework.vcxproj -> C:\Users\bodswor2\Desktop\210Coursework\210Coursework\x64\Debug\210Coursework.exe
