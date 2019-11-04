@@ -1,9 +1,10 @@
 ﻿  210Coursework.cpp
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(138,43): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(196,86): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(103,1): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(210,46): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(268,86): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  Previous IPDB not found, fall back to full compilation.
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(244): warning C4715: 'BoardBinarySearch': not all control paths return a value
-  All 338 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(341): warning C4715: 'BoardBinarySearch': not all control paths return a value
+  All 477 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   210Coursework.vcxproj -> C:\Users\bodswor2\Desktop\210Coursework\210Coursework\x64\Release\210Coursework.exe

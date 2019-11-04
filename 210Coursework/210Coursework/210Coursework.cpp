@@ -7,8 +7,11 @@
 #include <fstream>
 #include <windows.h> 
 #include <typeinfo>
+#include <map>  
 
 using namespace std;
+
+int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
 
 class Tile {
 public:
@@ -95,37 +98,102 @@ public:
 		}
 		SetConsoleTextAttribute(console, 15);
 	}
-	void InsertWord(string word, int xStart, int yStart, char direction)
+	void InsertWord(vector<tuple<string, int>>* legalWords, map<char, int>* letters, string word, int xStart, int yStart, char direction)
 	{
-		if (direction == 'V' || direction == 'v') {
+		int wordIndex = BoardBinarySearch(legalWords, word, 0, ((*legalWords).size() - 1));
+		int wordValue =0;
+		int multiplierFlag = 0;
+		if (direction == 'V' || direction == 'v') 
+		{
 			for (int i = 0; i < word.length(); i++)
 			{
-				tileList[(yStart-1) + i][(xStart-1)].tileCharacter = word[i];
+				tileList[(yStart - 1) + i][(xStart - 1)].tileCharacter = word[i];
+
+				if ((tileList[(yStart - 1) + i][(xStart - 1)].tileValue != 1) || (tileList[(yStart - 1) + i][(xStart - 1)].wordValue != 1))
+				{
+					multiplierFlag += 1;
+				}
+			}
+
+			if(multiplierFlag != 0)
+			{
+				int wordMult = 1;
+				for (int i = 0; i < word.length(); i++)
+				{
+					wordValue += (*letters)[word[i]] * tileList[(yStart - 1) + i][(xStart - 1)].tileValue;
+					if (tileList[(yStart - 1) + i][(xStart - 1)].wordValue == 2) 
+					{
+						wordMult *= 2;
+					}
+					else if (tileList[(yStart - 1) + i][(xStart - 1)].wordValue == 3)
+					{
+						wordMult *= 3;
+					}
+				}
+				wordValue *= wordMult;
+			}
+
+			else 
+			{
+				wordValue = get<1>((*legalWords)[wordIndex]);
 			}
 		}
-		else {
+
+		else 
+		{
 			for (int i = 0; i < word.length(); i++)
 			{
 				tileList[(yStart-1)][(xStart-1) + i].tileCharacter = word[i];
+
+				if ((tileList[(yStart - 1)][(xStart - 1) + i].tileValue != 1) || (tileList[(yStart - 1)][(xStart - 1) + i].wordValue != 1))
+				{
+					multiplierFlag += 1;
+				}
+			}
+
+
+			if (multiplierFlag != 0)
+			{
+				int wordMult = 1;
+				for (int i = 0; i < word.length(); i++)
+				{
+					wordValue += (*letters)[word[i]] * tileList[(yStart - 1)][(xStart - 1) + i].tileValue;
+					if (tileList[(yStart - 1)][(xStart - 1) + i].wordValue == 2)
+					{
+						wordMult *= 2;
+					}
+					else if (tileList[(yStart - 1)][(xStart - 1) + i].wordValue == 3)
+					{
+						wordMult *= 3;
+					}
+				}
+				wordValue *= wordMult;
+			}
+
+			else
+			{
+				wordValue = get<1>((*legalWords)[wordIndex]);
 			}
 		}
+
 		system("CLS");
 		ShowBoard();
 		cout << "The word " << word << " was placed at X= " << xStart << " and Y= " << yStart << endl;
+		cout << "The value of the played word is: " << wordValue << endl;
 	}
+
 	Board() {
 		console = GetStdHandle(STD_OUTPUT_HANDLE);
 	}
 };
 
 void ParseFile(vector<tuple<string,int>>* legalWords);
-void Play(vector<tuple<string, int>>* legalWords, Board playBoard);
-int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard);
 void DisplayList(vector<tuple<string, int>>* legalWords);
 void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count);
 void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count);
 void AssignWordValue(vector<tuple<string, int>>* legalWords);
-void LoadAnimation();
+void FillLetterMap(map<char, int>& letters);
 
 int COUNT;
 int main()
@@ -133,6 +201,8 @@ int main()
 	COUNT = 0;
 	//LoadAnimation();
 	bool isSorted = false;
+	map<char, int> LetterValues;
+	FillLetterMap(LetterValues);
 	vector<tuple<string, int>> myWords;
 	ParseFile(&myWords);
 	cout << "Legal word list created" << endl;
@@ -145,7 +215,7 @@ int main()
 	cout << endl;
 	Board playBoard;
 	playBoard.FillBoard();
-	Play(&myWords, playBoard);
+	Play(&myWords, &LetterValues, playBoard);
 }
 
 void DisplayList(vector<tuple<string, int>>* legalWords) 
@@ -183,7 +253,7 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	wordFile.close();
 }
 
-void Play(vector<tuple<string, int>>* legalWords, Board playBoard)
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard)
 {
 	string playedWord;
 	int wordIndex = -1;
@@ -241,7 +311,7 @@ void Play(vector<tuple<string, int>>* legalWords, Board playBoard)
 	system("CLS");
 	playBoard.ShowBoard();
 
-	playBoard.InsertWord(playedWord, xStart , yStart, direction);
+	playBoard.InsertWord(legalWords, letters, playedWord, xStart , yStart, direction);
 	
 }
 
@@ -385,18 +455,91 @@ void AssignWordValue(vector<tuple<string, int>>* legalWords)
 	}
 }
 
-void LoadAnimation() 
+void FillLetterMap(map<char,int> &letters) 
 {
-	bool isSorted = false;
-	int i = 0;
-	while (i<10000000) 
-	{
-		cout << "  /-_(^o^)_-\\ " << "\r";
-		Sleep(400);
-		//cout << " \--(^=^)-- "  << "\r";
-		//Sleep(400);
-		cout << "  \\_-(*o*)-_/ "  << "\r";
-		Sleep(400);
-		i++;
-	}
+	//1 value letters A, E, I, O, U, L, N, S, T, R
+	(letters)['a'] = 1;
+	(letters)['A'] = 1;
+
+	(letters)['e'] = 1;
+	(letters)['E'] = 1;
+
+	(letters)['i'] = 1;
+	(letters)['I'] = 1;
+
+	(letters)['o'] = 1;
+	(letters)['O'] = 1;
+
+	(letters)['u'] = 1;
+	(letters)['U'] = 1;
+
+	(letters)['l'] = 1;
+	(letters)['L'] = 1;
+
+	(letters)['n'] = 1;
+	(letters)['N'] = 1;
+
+	(letters)['s'] = 1;
+	(letters)['S'] = 1;
+
+	(letters)['t'] = 1;
+	(letters)['T'] = 1;
+
+	(letters)['r'] = 1;
+	(letters)['R'] = 1;
+
+	//2 value letters D, G
+	(letters)['d'] = 2;
+	(letters)['D'] = 2;
+
+	(letters)['g'] = 2;
+	(letters)['G'] = 2;
+
+	//3 value letters B, C, M, P
+	(letters)['b'] = 3;
+	(letters)['B'] = 3;
+
+	(letters)['c'] = 3;
+	(letters)['C'] = 3;
+
+	(letters)['m'] = 3;
+	(letters)['M'] = 3;
+
+	(letters)['p'] = 3;
+	(letters)['P'] = 3;
+
+	//4 value letters F, H, V, W, Y
+	(letters)['f'] = 4;
+	(letters)['F'] = 4;
+
+	(letters)['h'] = 4;
+	(letters)['H'] = 4;
+
+	(letters)['v'] = 4;
+	(letters)['V'] = 4;
+
+	(letters)['w'] = 4;
+	(letters)['W'] = 4;
+
+	(letters)['y'] = 4;
+	(letters)['Y'] = 4;
+
+	//5 value letters K
+	(letters)['k'] = 5;
+	(letters)['K'] = 5;
+
+	//8 value letters J, X
+	(letters)['j'] = 8;
+	(letters)['J'] = 8;
+
+	(letters)['x'] = 8;
+	(letters)['X'] = 8;
+
+	//10 value letters Q, Z
+	(letters)['q'] = 10;
+	(letters)['Q'] = 10;
+
+	(letters)['z'] = 10;
+	(letters)['Z'] = 10;
 }
+
