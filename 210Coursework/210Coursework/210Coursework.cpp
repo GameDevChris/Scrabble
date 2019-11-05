@@ -19,11 +19,13 @@ public:
 	int colourNo;
 	int tileValue;
 	int wordValue;
+	bool isUsed;
 	Tile() {
 		tileCharacter = char(254);
 		colourNo = 7;
 		tileValue = 1;
 		wordValue = 1;
+		isUsed = false;
 	}
 };
 class Board {
@@ -87,16 +89,33 @@ public:
 	};
 	void ShowBoard()
 	{
+		SetConsoleTextAttribute(console, 14);
+		cout << "   A B C D E F G H I J K L M N O" << endl;
+		
+
 		for (int i = 0; i < 15; i++)
 		{
+			SetConsoleTextAttribute(console, 14);
+			if  (i < 9)
+			{
+				cout << i +1 << "  ";
+			}
+
+			else 
+			{
+				cout << i + 1 << " " ;
+			}
+
 			for (int j = 0; j < 15; j++)
 			{
 				SetConsoleTextAttribute(console, tileList[i][j].colourNo);
+				//if(tileList[i][j].isUsed == true){ SetConsoleTextAttribute(console, 222); } colour code +16 to cycle through
 				cout << tileList[i][j].tileCharacter << " ";
 			}
 			cout << endl;
 		}
 		SetConsoleTextAttribute(console, 15);
+		cout << endl;
 	}
 	void InsertWord(vector<tuple<string, int>>* legalWords, map<char, int>* letters, string word, int xStart, int yStart, char direction)
 	{
@@ -108,6 +127,7 @@ public:
 			for (int i = 0; i < word.length(); i++)
 			{
 				tileList[(yStart - 1) + i][(xStart - 1)].tileCharacter = word[i];
+				tileList[(yStart - 1) + i][(xStart - 1)].isUsed = true;
 
 				if ((tileList[(yStart - 1) + i][(xStart - 1)].tileValue != 1) || (tileList[(yStart - 1) + i][(xStart - 1)].wordValue != 1))
 				{
@@ -144,6 +164,7 @@ public:
 			for (int i = 0; i < word.length(); i++)
 			{
 				tileList[(yStart-1)][(xStart-1) + i].tileCharacter = word[i];
+				tileList[(yStart - 1)][(xStart - 1) + i].isUsed = true;
 
 				if ((tileList[(yStart - 1)][(xStart - 1) + i].tileValue != 1) || (tileList[(yStart - 1)][(xStart - 1) + i].wordValue != 1))
 				{
@@ -194,6 +215,7 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, 
 void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count);
 void AssignWordValue(vector<tuple<string, int>>* legalWords);
 void FillLetterMap(map<char, int>& letters);
+int LetterToNumber(char letter);
 
 int COUNT;
 int main()
@@ -216,6 +238,7 @@ int main()
 	Board playBoard;
 	playBoard.FillBoard();
 	Play(&myWords, &LetterValues, playBoard);
+
 }
 
 void DisplayList(vector<tuple<string, int>>* legalWords) 
@@ -255,63 +278,89 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 
 void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard)
 {
-	string playedWord;
-	int wordIndex = -1;
-	int xStart;
-	int yStart;
-	char direction;
-	while (wordIndex == -1) 
+	for(int playAmount = 0; playAmount <10; playAmount++)
 	{
-		cout << endl;
-		cout << "What is the word that you want to play?" << endl;
-		cin >> playedWord;
-		wordIndex = BoardBinarySearch(legalWords, playedWord, 0, ((*legalWords).size() - 1));
-		if (wordIndex == -1)
+		string playedWord;
+		int wordIndex = -1;
+		int xStart;
+		char xStartLetter;
+		int yStart;
+		char direction;
+		while (wordIndex == -1) 
 		{
-			cout << "The given word is illegal" << endl;
+			cout << endl;
+			cout << "What is the word that you want to play?" << endl;
+			cin >> playedWord;
+			wordIndex = BoardBinarySearch(legalWords, playedWord, 0, ((*legalWords).size() - 1));
+			if (wordIndex == -1)
+			{
+				cout << "The given word is illegal" << endl;
+			}
 		}
-	}
-	system("CLS");
-	playBoard.ShowBoard();
-	cout << "The word is legal and at index " << wordIndex << " in the table" << endl;	
+
+		system("CLS");
+		playBoard.ShowBoard();
+		cout << "The word is legal and at index " << wordIndex << " in the table" << endl;	
 	
-	cout << "What is the X start position of the word you want to play?" << endl;
-	cin >> xStart;
-	while((xStart<1 || xStart >15)||(typeid(xStart)!=typeid(int)))
-	{
-		cout << char(200) << "(" << char(248) << char(239) << char(248) << ")" << char(188)  << " Error, please choose a X between 1 and 15: " << endl;
-		cin >> xStart;
+		cout << "What is the Horizontal start position of the word you want to play? (A to O)" << endl;
+		cin >> xStartLetter;
+		xStart = LetterToNumber(xStartLetter);
+
+		while((xStart<1 || xStart >15)||(typeid(xStart)!=typeid(int)))
+		{
+			cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188)  << " Error, please choose a Horizontal position between A and O: " << endl;
+			cin >> xStartLetter;
+			xStart = LetterToNumber(xStartLetter);
+
+			system("CLS");
+			playBoard.ShowBoard();
+		}
 		system("CLS");
 		playBoard.ShowBoard();
-	}
-	system("CLS");
-	playBoard.ShowBoard();
 
-	cout << "What is the Y start position of the word you want to play?" << endl;
-	cin >> yStart;
-	while (yStart < 1 || yStart >15)
-	{
-		cout << char(200) << "(" << char(248) << char(239) << char(248) << ")" << char(188) << " Error, please choose a Y between 1 and 15: " << endl;
+		cout << "What is the Vertical start position of the word you want to play? (1 to 15)" << endl;
 		cin >> yStart;
+		while (yStart < 1 || yStart >15)
+		{
+			cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please choose a Vertical position between 1 and 15: " << endl;
+			cin >> yStart;
+			system("CLS");
+			playBoard.ShowBoard();
+		}
 		system("CLS");
 		playBoard.ShowBoard();
-	}
-	system("CLS");
-	playBoard.ShowBoard();
 
-	cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
-	cin >> direction;
-	while (!(direction == 'h' || direction == 'H' || direction == 'v' || direction == 'V'))
-	{
-		cout << char(200) << "(" << char(248) << char(239) << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
+		cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
 		cin >> direction;
+		while (!(direction == 'h' || direction == 'H' || direction == 'v' || direction == 'V'))
+		{
+			cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
+			cin >> direction;
+			system("CLS");
+			playBoard.ShowBoard();
+		}
 		system("CLS");
 		playBoard.ShowBoard();
-	}
-	system("CLS");
-	playBoard.ShowBoard();
 
-	playBoard.InsertWord(legalWords, letters, playedWord, xStart , yStart, direction);
+		if ((xStart + playedWord.length() > 15) && ((direction == 'h') || (direction == 'H')) || ((yStart + playedWord.length() > 15) && ((direction == 'v') || (direction == 'V'))))
+		{
+			if ((direction == 'h') || (direction == 'H'))
+			{
+				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit horizontally at (" << xStart << ";" << yStart << ")" << endl;
+			}
+			else
+			{
+				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit vertically at (" << xStart << ";" << yStart << ")" << endl;
+			}
+			
+			string whatever;
+
+			Play(legalWords, letters, playBoard);
+		}
+		playBoard.InsertWord(legalWords, letters, playedWord, xStart , yStart, direction);
+
+		Play(legalWords, letters, playBoard);
+	}
 	
 }
 
@@ -543,3 +592,68 @@ void FillLetterMap(map<char,int> &letters)
 	(letters)['Z'] = 10;
 }
 
+int LetterToNumber(char letter)
+{
+	int numberValue = 0;
+	if((letter == 'A') || (letter == 'a'))
+	{
+		numberValue = 1;
+	}
+	if ((letter == 'B') || (letter == 'b'))
+	{
+		numberValue = 2;
+	}
+	if ((letter == 'C') || (letter == 'c'))
+	{
+		numberValue = 3;
+	}
+	if ((letter == 'D') || (letter == 'd'))
+	{
+		numberValue = 4;
+	}
+	if ((letter == 'E') || (letter =='e'))
+	{
+		numberValue = 5;
+	}
+	if ((letter == 'F') || (letter == 'f'))
+	{
+		numberValue = 6;
+	}
+	if ((letter == 'G') || (letter == 'g'))
+	{
+		numberValue = 7;
+	}
+	if ((letter == 'H') || (letter == 'h'))
+	{
+		numberValue = 8;
+	}
+	if ((letter == 'I') || (letter == 'i'))
+	{
+		numberValue = 9;
+	}
+	if ((letter == 'J') || (letter == 'j'))
+	{
+		numberValue = 10;
+	}
+	if ((letter == 'K') || (letter == 'k'))
+	{
+		numberValue = 11;
+	}
+	if ((letter == 'L') || (letter == 'l'))
+	{
+		numberValue = 12;
+	}
+	if ((letter == 'M') || (letter == 'm'))
+	{
+		numberValue = 13;
+	}
+	if ((letter == 'N') || (letter == 'n'))
+	{
+		numberValue = 14;
+	}
+	if ((letter == 'O') || (letter == 'o'))
+	{
+		numberValue = 15;
+	}
+	return numberValue;
+}
