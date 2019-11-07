@@ -13,13 +13,21 @@ using namespace std;
 
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
 
+struct Coords {
+	int x;
+	int y;
+};
+
+
 class Tile {
 public:
+	Coords myCoordinates;
 	char tileCharacter;
 	int colourNo;
 	int tileValue;
 	int wordValue;
 	bool isUsed;
+	Coords adjacentTiles[4];
 	Tile() {
 		tileCharacter = char(254);
 		colourNo = 7;
@@ -39,6 +47,9 @@ public:
 			for (int j = 0; j < 15; j++)
 			{
 				Tile tile;
+
+				tile.myCoordinates.x = i;
+				tile.myCoordinates.y = j;
 
 				//double word
 				if (((i == j) || (j == 14 - i)) && ((i != 0) && (i != 5) && (i != 6) && (i != 8) && (i != 9) && (i != 14)))
@@ -202,14 +213,73 @@ public:
 		cout << "The word " << word << " was placed at X= " << xStart << " and Y= " << yStart << endl;
 		cout << "The value of the played word is: " << wordValue << endl;
 	}
+	bool CheckIntersection(string word, int xStart, int yStart, char direction)
+	{
+		int intersectionCount = 0;
+		if (direction == 'v' || direction == 'V')
+		{
+			for (int i = 0; i < word.length(); i++)
+			{
+				if(tileList[(yStart - 1) + i][xStart - 1].isUsed == true)
+				{
+					intersectionCount++;
+					if (tileList[(yStart - 1) + i][xStart - 1].tileCharacter != word[i])
+					{
+						return false;
+					}
+				}
+			}
+		}
 
+		else
+		{
+			for (int i = 0; i < word.length(); i++)
+			{
+				if (tileList[yStart - 1][(xStart - 1) + i].isUsed == true)
+				{
+					intersectionCount++;
+					if (tileList[yStart - 1][(xStart - 1) + i].tileCharacter != word[i])
+					{
+						return false;
+					}
+				}
+			}
+		}
+
+		if (intersectionCount == 0)
+		{
+			return false;
+		}
+
+		return true;
+	}
+	void AssignAdjacency()
+	{
+		for (int i = 0; i < 15; i++)
+		{
+			for (int j = 0; j < 15; j++)
+			{
+				tileList[i][j].adjacentTiles[1].x = i - 1;
+				tileList[i][j].adjacentTiles[1].y = j;
+
+				tileList[i][j].adjacentTiles[2].x = i;
+				tileList[i][j].adjacentTiles[2].y = j - 1;
+
+				tileList[i][j].adjacentTiles[1].x = i + 1;
+				tileList[i][j].adjacentTiles[1].y = j;
+
+				tileList[i][j].adjacentTiles[1].x = i;
+				tileList[i][j].adjacentTiles[1].y = j + 1;
+			}
+		}
+	}
 	Board() {
 		console = GetStdHandle(STD_OUTPUT_HANDLE);
 	}
 };
 
 void ParseFile(vector<tuple<string,int>>* legalWords);
-void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard);
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay);
 void DisplayList(vector<tuple<string, int>>* legalWords);
 void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count);
 void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count);
@@ -237,7 +307,8 @@ int main()
 	cout << endl;
 	Board playBoard;
 	playBoard.FillBoard();
-	Play(&myWords, &LetterValues, playBoard);
+	playBoard.AssignAdjacency();
+	Play(&myWords, &LetterValues, playBoard, true);
 
 }
 
@@ -276,9 +347,9 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	wordFile.close();
 }
 
-void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard)
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay)
 {
-	for(int playAmount = 0; playAmount <10; playAmount++)
+	for (int playAmount = 0; playAmount < 10; playAmount++)
 	{
 		string playedWord;
 		int wordIndex = -1;
@@ -286,7 +357,7 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 		char xStartLetter;
 		int yStart;
 		char direction;
-		while (wordIndex == -1) 
+		while (wordIndex == -1)
 		{
 			cout << endl;
 			cout << "What is the word that you want to play?" << endl;
@@ -300,66 +371,108 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 
 		system("CLS");
 		playBoard.ShowBoard();
-		cout << "The word is legal and at index " << wordIndex << " in the table" << endl;	
-	
-		cout << "What is the Horizontal start position of the word you want to play? (A to O)" << endl;
-		cin >> xStartLetter;
-		xStart = LetterToNumber(xStartLetter);
+		cout << "The word is legal and at index " << wordIndex << " in the table" << endl;
 
-		while((xStart<1 || xStart >15)||(typeid(xStart)!=typeid(int)))
+		if (firstPlay == false) 
 		{
-			cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188)  << " Error, please choose a Horizontal position between A and O: " << endl;
+			cout << "What is the Horizontal start position of the word you want to play? (A to O)" << endl;
 			cin >> xStartLetter;
 			xStart = LetterToNumber(xStartLetter);
 
-			system("CLS");
-			playBoard.ShowBoard();
-		}
-		system("CLS");
-		playBoard.ShowBoard();
-
-		cout << "What is the Vertical start position of the word you want to play? (1 to 15)" << endl;
-		cin >> yStart;
-		while (yStart < 1 || yStart >15)
-		{
-			cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please choose a Vertical position between 1 and 15: " << endl;
-			cin >> yStart;
-			system("CLS");
-			playBoard.ShowBoard();
-		}
-		system("CLS");
-		playBoard.ShowBoard();
-
-		cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
-		cin >> direction;
-		while (!(direction == 'h' || direction == 'H' || direction == 'v' || direction == 'V'))
-		{
-			cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
-			cin >> direction;
-			system("CLS");
-			playBoard.ShowBoard();
-		}
-		system("CLS");
-		playBoard.ShowBoard();
-
-		if ((xStart + playedWord.length() > 15) && ((direction == 'h') || (direction == 'H')) || ((yStart + playedWord.length() > 15) && ((direction == 'v') || (direction == 'V'))))
-		{
-			if ((direction == 'h') || (direction == 'H'))
+			while ((xStart < 1 || xStart >15) || (typeid(xStart) != typeid(int)))
 			{
-				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit horizontally at (" << xStart << ";" << yStart << ")" << endl;
+				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please choose a Horizontal position between A and O: " << endl;
+				cin >> xStartLetter;
+				xStart = LetterToNumber(xStartLetter);
+
+				system("CLS");
+				playBoard.ShowBoard();
+			}
+			system("CLS");
+			playBoard.ShowBoard();
+
+			cout << "What is the Vertical start position of the word you want to play? (1 to 15)" << endl;
+			cin >> yStart;
+			while (yStart < 1 || yStart >15)
+			{
+				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please choose a Vertical position between 1 and 15: " << endl;
+				cin >> yStart;
+				system("CLS");
+				playBoard.ShowBoard();
+			}
+			system("CLS");
+			playBoard.ShowBoard();
+
+			cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
+			cin >> direction;
+			while (!(direction == 'h' || direction == 'H' || direction == 'v' || direction == 'V'))
+			{
+				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
+				cin >> direction;
+				system("CLS");
+				playBoard.ShowBoard();
+			}
+			system("CLS");
+			playBoard.ShowBoard();
+
+			if ((xStart + playedWord.length() > 15) && ((direction == 'h') || (direction == 'H')) || ((yStart + playedWord.length() > 15) && ((direction == 'v') || (direction == 'V'))))
+			{
+				if ((direction == 'h') || (direction == 'H'))
+				{
+					cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit horizontally at (" << xStart << ";" << yStart << ")" << endl;
+				}
+				else
+				{
+					cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit vertically at (" << xStart << ";" << yStart << ")" << endl;
+				}
+
+				Play(legalWords, letters, playBoard, firstPlay);
+			}
+
+			bool checkBool = playBoard.CheckIntersection(playedWord, xStart, yStart, direction);
+			if (checkBool == false)
+			{
+				cout << "You can't place that there, your word must have a valid intersection wih a previously played word." << endl;
 			}
 			else
 			{
-				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit vertically at (" << xStart << ";" << yStart << ")" << endl;
+				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction);
 			}
-			
-			string whatever;
 
-			Play(legalWords, letters, playBoard);
 		}
-		playBoard.InsertWord(legalWords, letters, playedWord, xStart , yStart, direction);
+		
+		else
+		{ 
+			xStart = 7;
+			yStart = 7;
+			cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
+			cin >> direction;
+			while (!(direction == 'h' || direction == 'H' || direction == 'v' || direction == 'V'))
+			{
+				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
+				cin >> direction;
+				system("CLS");
+				playBoard.ShowBoard();
+			}
+			system("CLS");
+			playBoard.ShowBoard();
 
-		Play(legalWords, letters, playBoard);
+			if ((xStart + playedWord.length() > 15) && ((direction == 'h') || (direction == 'H')) || ((yStart + playedWord.length() > 15) && ((direction == 'v') || (direction == 'V'))))
+			{
+				if ((direction == 'h') || (direction == 'H'))
+				{
+					cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit horizontally at (" << xStart << ";" << yStart << ")" << endl;
+				}
+				else
+				{
+					cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit vertically at (" << xStart << ";" << yStart << ")" << endl;
+				}
+
+				Play(legalWords, letters, playBoard, firstPlay);
+			}
+			playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction);
+		}
+		Play(legalWords, letters, playBoard, false);
 	}
 	
 }
@@ -656,4 +769,20 @@ int LetterToNumber(char letter)
 		numberValue = 15;
 	}
 	return numberValue;
+}
+
+void TestAdjacency (Board playBoard)
+{
+	Tile playTile;
+	cout << "What is the x of the tile you want to test?" << endl;
+	cin >> playTile.myCoordinates.x;
+	cout << "What is the y of the tile you want to test?" << endl;
+	cin >> playTile.myCoordinates.y;
+
+	playBoard.AssignAdjacency;
+
+	cout << "left: " << playTile.adjacentTiles[1].x << ";" << playTile.adjacentTiles[1].y << endl;
+	cout << "up: " << playTile.adjacentTiles[2].x << ";" << playTile.adjacentTiles[2].y << endl;
+	cout << "right: " << playTile.adjacentTiles[3].x << ";" << playTile.adjacentTiles[3].y << endl;
+	cout << "down: " << playTile.adjacentTiles[4].x << ";" << playTile.adjacentTiles[4].y << endl;
 }
