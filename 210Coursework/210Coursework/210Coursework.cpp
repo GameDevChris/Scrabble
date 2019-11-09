@@ -8,16 +8,112 @@
 #include <windows.h> 
 #include <typeinfo>
 #include <map>  
+#include <random>
 
 using namespace std;
 
+int COUNT;
+
+class Board;
+class Tile;
+class Player;
+class BagOfLetters;
+void ParseFile(vector<tuple<string, int>>* legalWords);
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters LetterBag, Player *Player1);
+void DisplayList(vector<tuple<string, int>>* legalWords);
+void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count);
+void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count);
+void AssignWordValue(vector<tuple<string, int>>* legalWords);
+void FillLetterMap(map<char, int>& letters);
+int LetterToNumber(char letter);
+void TestAdjacency(Board playBoard);
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
+Tile CoordsToTile(Board playBoard, int x, int y);
 
 struct Coords {
 	int x;
 	int y;
 };
 
+class Player {
+public:
+	vector<char>PlayerHand = { char(167), char(167), char(167), char(167), char(167), char(167), char(167) };
+	int PlayerPoints;
+	Player() {
+		PlayerPoints = 0;
+	}
+};
+
+class BagOfLetters {
+public:
+	vector<char>Letters ={
+		//12 e
+		'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+		//9 a
+		'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+		//9 i
+		'i', 'i', 'i', 'i', 'i', 'i', 'i', 'i', 'i',
+		//8 o
+		'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+		//6 n
+		'n', 'n', 'n', 'n', 'n', 'n',
+		//6 r
+		'r', 'r', 'r', 'r', 'r', 'r',
+		//6 t
+		't', 't', 't', 't', 't', 't',
+		//4 l
+		'l', 'l', 'l', 'l',
+		//4 s
+		's', 's', 's', 's',
+		//4 u
+		'u', 'u', 'u', 'u',
+		//4 d
+		'd', 'd', 'd', 'd',
+		//3 g
+		'g', 'g', 'g',
+		//2 b
+		'b', 'b',
+		//2 c
+		'c', 'c',
+		//2 m
+		'm', 'm',
+		//2 p
+		'p', 'p',
+		//2 f
+		'f', 'f',
+		//2 h
+		'h', 'h',
+		//2 v
+		'v', 'v',
+		//2 w
+		'w', 'w',
+		//2 y
+		'y', 'y',
+		//1 k
+		'k',
+		//1 j
+		'j',
+		//1 x
+		'x',
+		//1 q
+		'q',
+		//1 z
+		'z',
+		//2 Blanks
+		char(254), char(254)
+	};
+	void ShuffleBag() 
+	{
+		random_shuffle(Letters.begin(), Letters.end());
+	}
+	void GiveLetter(Player player) 
+	{
+		ShuffleBag();
+		char RandomLetter = Letters[100];
+		Letters.pop_back();
+		player.PlayerHand.push_back(RandomLetter);
+	}
+};
 
 class Tile {
 public:
@@ -28,14 +124,44 @@ public:
 	int wordValue;
 	bool isUsed;
 	Coords adjacentTiles[4];
+	void assignAdjacent()
+	{
+		adjacentTiles[0].x = myCoordinates.x - 1;
+		adjacentTiles[0].y = myCoordinates.y;
+
+		adjacentTiles[1].x = myCoordinates.x;
+		adjacentTiles[1].y = myCoordinates.y - 1;
+
+		adjacentTiles[2].x = myCoordinates.x + 1;
+		adjacentTiles[2].y = myCoordinates.y;
+
+		adjacentTiles[3].x = myCoordinates.x;
+		adjacentTiles[3].y = myCoordinates.y + 1;
+	}
 	Tile() {
 		tileCharacter = char(254);
 		colourNo = 7;
 		tileValue = 1;
 		wordValue = 1;
 		isUsed = false;
+
+		myCoordinates.x = 0;
+		myCoordinates.y = 0;
+
+		adjacentTiles[0].x = 0;
+		adjacentTiles[0].y = 0;
+
+		adjacentTiles[1].x = 0;
+		adjacentTiles[1].y = 0;
+
+		adjacentTiles[2].x = 0;
+		adjacentTiles[2].y = 0;
+
+		adjacentTiles[3].x = 0;
+		adjacentTiles[3].y = 0;
 	}
 };
+
 class Board {
 public:
 	HANDLE console;
@@ -47,7 +173,6 @@ public:
 			for (int j = 0; j < 15; j++)
 			{
 				Tile tile;
-
 				tile.myCoordinates.x = i;
 				tile.myCoordinates.y = j;
 
@@ -98,7 +223,7 @@ public:
 			}
 		}
 	};
-	void ShowBoard()
+	void ShowBoard(Player *Player1)
 	{
 		SetConsoleTextAttribute(console, 14);
 		cout << "   A B C D E F G H I J K L M N O" << endl;
@@ -109,12 +234,12 @@ public:
 			SetConsoleTextAttribute(console, 14);
 			if  (i < 9)
 			{
-				cout << i +1 << "  ";
+				cout << " " <<  i +1 << " ";
 			}
 
 			else 
 			{
-				cout << i + 1 << " " ;
+					cout << i + 1 << " " ;
 			}
 
 			for (int j = 0; j < 15; j++)
@@ -127,8 +252,13 @@ public:
 		}
 		SetConsoleTextAttribute(console, 15);
 		cout << endl;
+		cout << "Player Tiles: " << "       " << "P1 Score: " << (*Player1).PlayerPoints << endl;
+		for (int i = 0; i < (*Player1).PlayerHand.size(); i++) {
+			cout << (*Player1).PlayerHand[i] << " ";
+		}
+		cout << endl << endl;
 	}
-	void InsertWord(vector<tuple<string, int>>* legalWords, map<char, int>* letters, string word, int xStart, int yStart, char direction)
+	void InsertWord(vector<tuple<string, int>>* legalWords, map<char, int>* letters, string word, int xStart, int yStart, char direction, Player* Player1)
 	{
 		int wordIndex = BoardBinarySearch(legalWords, word, 0, ((*legalWords).size() - 1));
 		int wordValue =0;
@@ -209,7 +339,8 @@ public:
 		}
 
 		system("CLS");
-		ShowBoard();
+		(*Player1).PlayerPoints += wordValue;
+		ShowBoard(Player1);
 		cout << "The word " << word << " was placed at X= " << xStart << " and Y= " << yStart << endl;
 		cout << "The value of the played word is: " << wordValue << endl;
 	}
@@ -259,17 +390,7 @@ public:
 		{
 			for (int j = 0; j < 15; j++)
 			{
-				tileList[i][j].adjacentTiles[1].x = i - 1;
-				tileList[i][j].adjacentTiles[1].y = j;
-
-				tileList[i][j].adjacentTiles[2].x = i;
-				tileList[i][j].adjacentTiles[2].y = j - 1;
-
-				tileList[i][j].adjacentTiles[1].x = i + 1;
-				tileList[i][j].adjacentTiles[1].y = j;
-
-				tileList[i][j].adjacentTiles[1].x = i;
-				tileList[i][j].adjacentTiles[1].y = j + 1;
+				tileList[i][j].assignAdjacent();
 			}
 		}
 	}
@@ -278,18 +399,10 @@ public:
 	}
 };
 
-void ParseFile(vector<tuple<string,int>>* legalWords);
-void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay);
-void DisplayList(vector<tuple<string, int>>* legalWords);
-void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count);
-void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count);
-void AssignWordValue(vector<tuple<string, int>>* legalWords);
-void FillLetterMap(map<char, int>& letters);
-int LetterToNumber(char letter);
-
-int COUNT;
 int main()
 {
+	BagOfLetters LetterBag;
+	Player Player1;
 	COUNT = 0;
 	//LoadAnimation();
 	bool isSorted = false;
@@ -308,7 +421,8 @@ int main()
 	Board playBoard;
 	playBoard.FillBoard();
 	playBoard.AssignAdjacency();
-	Play(&myWords, &LetterValues, playBoard, true);
+	//TestAdjacency(playBoard);
+	Play(&myWords, &LetterValues, playBoard, true, LetterBag, &Player1);
 
 }
 
@@ -347,7 +461,7 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	wordFile.close();
 }
 
-void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay)
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters LetterBag, Player *Player1)
 {
 	for (int playAmount = 0; playAmount < 10; playAmount++)
 	{
@@ -370,7 +484,7 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 		}
 
 		system("CLS");
-		playBoard.ShowBoard();
+		playBoard.ShowBoard(Player1);
 		cout << "The word is legal and at index " << wordIndex << " in the table" << endl;
 
 		if (firstPlay == false) 
@@ -386,10 +500,10 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				xStart = LetterToNumber(xStartLetter);
 
 				system("CLS");
-				playBoard.ShowBoard();
+				playBoard.ShowBoard(Player1);
 			}
 			system("CLS");
-			playBoard.ShowBoard();
+			playBoard.ShowBoard(Player1);
 
 			cout << "What is the Vertical start position of the word you want to play? (1 to 15)" << endl;
 			cin >> yStart;
@@ -398,10 +512,10 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please choose a Vertical position between 1 and 15: " << endl;
 				cin >> yStart;
 				system("CLS");
-				playBoard.ShowBoard();
+				playBoard.ShowBoard(Player1);
 			}
 			system("CLS");
-			playBoard.ShowBoard();
+			playBoard.ShowBoard(Player1);
 
 			cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
 			cin >> direction;
@@ -410,10 +524,10 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
 				cin >> direction;
 				system("CLS");
-				playBoard.ShowBoard();
+				playBoard.ShowBoard(Player1);
 			}
 			system("CLS");
-			playBoard.ShowBoard();
+			playBoard.ShowBoard(Player1);
 
 			if ((xStart + playedWord.length() > 15) && ((direction == 'h') || (direction == 'H')) || ((yStart + playedWord.length() > 15) && ((direction == 'v') || (direction == 'V'))))
 			{
@@ -426,7 +540,7 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 					cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit vertically at (" << xStart << ";" << yStart << ")" << endl;
 				}
 
-				Play(legalWords, letters, playBoard, firstPlay);
+				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
 			}
 
 			bool checkBool = playBoard.CheckIntersection(playedWord, xStart, yStart, direction);
@@ -436,15 +550,15 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 			}
 			else
 			{
-				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction);
+				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1);
 			}
 
 		}
 		
 		else
 		{ 
-			xStart = 7;
-			yStart = 7;
+			xStart = 8;
+			yStart = 8;
 			cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
 			cin >> direction;
 			while (!(direction == 'h' || direction == 'H' || direction == 'v' || direction == 'V'))
@@ -452,10 +566,10 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
 				cin >> direction;
 				system("CLS");
-				playBoard.ShowBoard();
+				playBoard.ShowBoard(Player1);
 			}
 			system("CLS");
-			playBoard.ShowBoard();
+			playBoard.ShowBoard(Player1);
 
 			if ((xStart + playedWord.length() > 15) && ((direction == 'h') || (direction == 'H')) || ((yStart + playedWord.length() > 15) && ((direction == 'v') || (direction == 'V'))))
 			{
@@ -468,11 +582,11 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 					cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit vertically at (" << xStart << ";" << yStart << ")" << endl;
 				}
 
-				Play(legalWords, letters, playBoard, firstPlay);
+				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
 			}
-			playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction);
+			playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1);
 		}
-		Play(legalWords, letters, playBoard, false);
+		Play(legalWords, letters, playBoard, false, LetterBag, Player1);
 	}
 	
 }
@@ -773,16 +887,22 @@ int LetterToNumber(char letter)
 
 void TestAdjacency (Board playBoard)
 {
-	Tile playTile;
+	int x, y;
 	cout << "What is the x of the tile you want to test?" << endl;
-	cin >> playTile.myCoordinates.x;
+	cin >> x;
 	cout << "What is the y of the tile you want to test?" << endl;
-	cin >> playTile.myCoordinates.y;
+	cin >> y;
+	
+	Tile playTile = playBoard.tileList[x][y];
+	playTile.assignAdjacent();
 
-	playBoard.AssignAdjacency;
+	cout << "left: " << playTile.adjacentTiles[0].x << ";" << playTile.adjacentTiles[0].y << endl;
+	cout << "up: " << playTile.adjacentTiles[1].x << ";" << playTile.adjacentTiles[1].y << endl;
+	cout << "right: " << playTile.adjacentTiles[2].x << ";" << playTile.adjacentTiles[2].y << endl;
+	cout << "down: " << playTile.adjacentTiles[3].x << ";" << playTile.adjacentTiles[3].y << endl;
+}
 
-	cout << "left: " << playTile.adjacentTiles[1].x << ";" << playTile.adjacentTiles[1].y << endl;
-	cout << "up: " << playTile.adjacentTiles[2].x << ";" << playTile.adjacentTiles[2].y << endl;
-	cout << "right: " << playTile.adjacentTiles[3].x << ";" << playTile.adjacentTiles[3].y << endl;
-	cout << "down: " << playTile.adjacentTiles[4].x << ";" << playTile.adjacentTiles[4].y << endl;
+Tile CoordsToTile(Board playBoard, int x, int y)
+{
+	return (playBoard.tileList[x][y]);
 }
