@@ -19,7 +19,7 @@ class Tile;
 class Player;
 class BagOfLetters;
 void ParseFile(vector<tuple<string, int>>* legalWords);
-void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters LetterBag, Player *Player1);
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters *LetterBag, Player *Player1);
 void DisplayList(vector<tuple<string, int>>* legalWords);
 void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count);
 void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count);
@@ -29,6 +29,7 @@ int LetterToNumber(char letter);
 void TestAdjacency(Board playBoard);
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
 Tile CoordsToTile(Board playBoard, int x, int y);
+bool CheckLetterHand(Player* Player1, string word);
 
 struct Coords {
 	int x;
@@ -37,8 +38,9 @@ struct Coords {
 
 class Player {
 public:
-	vector<char>PlayerHand = { char(167), char(167), char(167), char(167), char(167), char(167), char(167) };
+	vector<char>PlayerHand;// = { char(167), char(167), char(167), char(167), char(167), char(167), char(167) };
 	int PlayerPoints;
+	int MaxSize = 7;
 	Player() {
 		PlayerPoints = 0;
 	}
@@ -106,12 +108,14 @@ public:
 	{
 		random_shuffle(Letters.begin(), Letters.end());
 	}
-	void GiveLetter(Player player) 
+	void GiveLetter(Player *player) 
 	{
 		ShuffleBag();
-		char RandomLetter = Letters[100];
+		int Random = rand() % 100;
+		char RandomLetter = Letters[Random];
+		cout << RandomLetter << endl;
 		Letters.pop_back();
-		player.PlayerHand.push_back(RandomLetter);
+		(*player).PlayerHand.push_back(RandomLetter);
 	}
 };
 
@@ -422,7 +426,7 @@ int main()
 	playBoard.FillBoard();
 	playBoard.AssignAdjacency();
 	//TestAdjacency(playBoard);
-	Play(&myWords, &LetterValues, playBoard, true, LetterBag, &Player1);
+	Play(&myWords, &LetterValues, playBoard, true, &LetterBag, &Player1);
 
 }
 
@@ -461,10 +465,14 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	wordFile.close();
 }
 
-void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters LetterBag, Player *Player1)
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters *LetterBag, Player *Player1)
 {
 	for (int playAmount = 0; playAmount < 10; playAmount++)
 	{
+		while ((*Player1).PlayerHand.size() < (*Player1).MaxSize)
+		{ 
+			(*LetterBag).GiveLetter(Player1);
+		}
 		string playedWord;
 		int wordIndex = -1;
 		int xStart;
@@ -584,6 +592,9 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 
 				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
 			}
+
+			bool testFlag = CheckLetterHand(Player1, word);
+			if()
 			playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1);
 		}
 		Play(legalWords, letters, playBoard, false, LetterBag, Player1);
@@ -905,4 +916,26 @@ void TestAdjacency (Board playBoard)
 Tile CoordsToTile(Board playBoard, int x, int y)
 {
 	return (playBoard.tileList[x][y]);
+}
+
+bool CheckLetterHand(Player* Player1, string word)
+{
+	for(int i=0; i<word.size(); i++)
+	{
+		int flag = 0;
+		for(int j = 0; j < (*Player1).PlayerHand.size(); j++)
+		{
+			if((word[i]==(*Player1).PlayerHand[j]) ||(((*Player1).PlayerHand[j]) == char(254)))
+			{
+				flag++;
+			}
+		}
+		cout << flag << endl;
+		if (flag==word.size())
+		{
+			return true;
+		}
+
+		return false;
+	}
 }
