@@ -1,10 +1,11 @@
 ﻿  210Coursework.cpp
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(266,1): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(418,46): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(486,87): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(270,1): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(411,12): warning C4244:  'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(423,46): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(492,87): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  2 of 560 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+  17 of 556 functions ( 3.1%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    54 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   210Coursework.vcxproj -> C:\Users\bodswor2\Desktop\210Coursework\210Coursework\x64\Release\210Coursework.exe

@@ -9,6 +9,8 @@
 #include <typeinfo>
 #include <map>  
 #include <random>
+#include <algorithm>
+#include <time.h>
 
 using namespace std;
 
@@ -38,7 +40,7 @@ struct Coords {
 
 class Player {
 public:
-	vector<char>PlayerHand;// = { char(167), char(167), char(167), char(167), char(167), char(167), char(167) };
+	vector<char>PlayerHand{ NULL, NULL, NULL, NULL, NULL, NULL, NULL };// = { char(167), char(167), char(167), char(167), char(167), char(167), char(167) };
 	int PlayerPoints;
 	int MaxSize = 7;
 	Player() {
@@ -106,16 +108,17 @@ public:
 	};
 	void ShuffleBag() 
 	{
-		random_shuffle(Letters.begin(), Letters.end());
+		auto random = default_random_engine{};
+		shuffle(Letters.begin(), Letters.end(), random);
 	}
-	void GiveLetter(Player *player) 
+	void GiveLetter(Player *player, int index) 
 	{
 		ShuffleBag();
 		int Random = rand() % 100;
 		char RandomLetter = Letters[Random];
 		cout << RandomLetter << endl;
 		Letters.pop_back();
-		(*player).PlayerHand.push_back(RandomLetter);
+		(*player).PlayerHand[index] = RandomLetter;
 	}
 };
 
@@ -405,6 +408,7 @@ public:
 
 int main()
 {
+	srand(time(NULL));
 	BagOfLetters LetterBag;
 	Player Player1;
 	COUNT = 0;
@@ -467,11 +471,12 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 
 void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters *LetterBag, Player *Player1)
 {
+	(*LetterBag).ShuffleBag();
 	for (int playAmount = 0; playAmount < 10; playAmount++)
 	{
-		while ((*Player1).PlayerHand.size() < (*Player1).MaxSize)
+		for(int index = 0; index < (*Player1).PlayerHand.size(); index ++)
 		{ 
-			(*LetterBag).GiveLetter(Player1);
+			(*LetterBag).GiveLetter(Player1, index);
 		}
 		string playedWord;
 		int wordIndex = -1;
@@ -558,7 +563,24 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 			}
 			else
 			{
-				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1);
+				bool testFlag = CheckLetterHand(Player1, playedWord);
+				if (testFlag == true) 
+				{ 
+					for (int num = 0; num < (*Player1).PlayerHand.size(); num++)
+					{
+						int flag = 0;
+						for (int num2 = 0; num < playedWord.size(); num++)
+						{
+							if ((playedWord[num2] == (*Player1).PlayerHand[num]) && flag == 0)
+							{
+								(*Player1).PlayerHand.erase((*Player1).PlayerHand.begin() + num);
+								flag++;
+							}
+						}
+
+					}
+				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1); 
+				}
 			}
 
 		}
@@ -593,9 +615,30 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
 			}
 
-			bool testFlag = CheckLetterHand(Player1, word);
-			if()
-			playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1);
+			bool testFlag = CheckLetterHand(Player1, playedWord);
+			if(testFlag == true){ 
+			for (int num = 0; num < playedWord.size(); num++)
+			{
+				int flag = 0;
+					for(int num2 = 0; num2 < (*Player1).PlayerHand.size(); num2++)
+					{
+						if ((playedWord[num2] == (*Player1).PlayerHand[num] || flag == 0) ) 
+						{
+							(*Player1).PlayerHand[num] = NULL;
+
+							cout << "erased" << endl;
+							flag++;
+						}
+					}
+					
+			}
+				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1); 
+			}
+
+			else
+			{
+				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
+			}
 		}
 		Play(legalWords, letters, playBoard, false, LetterBag, Player1);
 	}
@@ -920,22 +963,54 @@ Tile CoordsToTile(Board playBoard, int x, int y)
 
 bool CheckLetterHand(Player* Player1, string word)
 {
+	int blankAmount = 0;
+	int flag = 0;
+	for(int num = 0; num< (*Player1).PlayerHand.size(); num++)
+	{
+		if((*Player1).PlayerHand[num] == char(254))
+		{
+			blankAmount++;
+		}
+	}
+
+	cout << "You have " << blankAmount << " blanks" << endl;
 	for(int i=0; i<word.size(); i++)
 	{
-		int flag = 0;
+		int found = 0;
 		for(int j = 0; j < (*Player1).PlayerHand.size(); j++)
 		{
-			if((word[i]==(*Player1).PlayerHand[j]) ||(((*Player1).PlayerHand[j]) == char(254)))
+			if((word[i]==(*Player1).PlayerHand[j]))
 			{
-				flag++;
+				found++;
 			}
 		}
-		cout << flag << endl;
-		if (flag==word.size())
+		if (found > 0) 
+		{
+			flag++;
+		}
+	}
+	if (flag == word.size())
+	{
+		return true;
+	}
+
+	else if(flag + blankAmount >= word.size())
+	{
+		char check;
+		cout << "To place this word you will need to use " << word.size() - flag << " Blanks, is this ok? (Y/N)" << endl;
+		cin >> check;
+		if (check == 'y' || check == 'Y')
 		{
 			return true;
 		}
-
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		cout << "You don't have the letters to play that word" << endl;
 		return false;
 	}
 }
