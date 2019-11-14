@@ -116,10 +116,11 @@ public:
 		ShuffleBag();
 		int Random = rand() % 100;
 		char RandomLetter = Letters[Random];
-		cout << RandomLetter << endl;
+		//cout << RandomLetter << endl;
 		Letters.pop_back();
 		(*player).PlayerHand[index] = RandomLetter;
 	}
+
 };
 
 class Tile {
@@ -230,7 +231,7 @@ public:
 			}
 		}
 	};
-	void ShowBoard(Player *Player1)
+	void ShowBoard(Player *Player1, BagOfLetters* LetterBag)
 	{
 		SetConsoleTextAttribute(console, 14);
 		cout << "   A B C D E F G H I J K L M N O" << endl;
@@ -260,12 +261,13 @@ public:
 		SetConsoleTextAttribute(console, 15);
 		cout << endl;
 		cout << "Player Tiles: " << "       " << "P1 Score: " << (*Player1).PlayerPoints << endl;
+		cout << "Amount of Tiles left in bag: " << (*LetterBag).Letters.size() << endl;
 		for (int i = 0; i < (*Player1).PlayerHand.size(); i++) {
 			cout << (*Player1).PlayerHand[i] << " ";
 		}
 		cout << endl << endl;
 	}
-	void InsertWord(vector<tuple<string, int>>* legalWords, map<char, int>* letters, string word, int xStart, int yStart, char direction, Player* Player1)
+	void InsertWord(vector<tuple<string, int>>* legalWords, map<char, int>* letters, string word, int xStart, int yStart, char direction, Player* Player1, BagOfLetters* LetterBag)
 	{
 		int wordIndex = BoardBinarySearch(legalWords, word, 0, ((*legalWords).size() - 1));
 		int wordValue =0;
@@ -347,7 +349,7 @@ public:
 
 		system("CLS");
 		(*Player1).PlayerPoints += wordValue;
-		ShowBoard(Player1);
+		ShowBoard(Player1, LetterBag);
 		cout << "The word " << word << " was placed at X= " << xStart << " and Y= " << yStart << endl;
 		cout << "The value of the played word is: " << wordValue << endl;
 	}
@@ -476,8 +478,13 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 	{
 		for(int index = 0; index < (*Player1).PlayerHand.size(); index ++)
 		{ 
-			(*LetterBag).GiveLetter(Player1, index);
+			if((*Player1).PlayerHand[index] == NULL)
+			{
+				(*LetterBag).GiveLetter(Player1, index);
+			}
 		}
+		system("CLS");
+		playBoard.ShowBoard(Player1, LetterBag);
 		string playedWord;
 		int wordIndex = -1;
 		int xStart;
@@ -487,8 +494,19 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 		while (wordIndex == -1)
 		{
 			cout << endl;
-			cout << "What is the word that you want to play?" << endl;
+			cout << "What is the word that you want to play? (Or say PASS if unable to play)" << endl;
 			cin >> playedWord;
+
+			if (playedWord == "PASS")
+			{
+				for (int i = 0; i < (*Player1).PlayerHand.size(); i++) 
+				{
+					(*LetterBag).Letters.push_back((*Player1).PlayerHand[i]);
+					(*Player1).PlayerHand[i] = NULL;
+				}
+				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
+			}
+
 			wordIndex = BoardBinarySearch(legalWords, playedWord, 0, ((*legalWords).size() - 1));
 			if (wordIndex == -1)
 			{
@@ -497,7 +515,7 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 		}
 
 		system("CLS");
-		playBoard.ShowBoard(Player1);
+		playBoard.ShowBoard(Player1, LetterBag);
 		cout << "The word is legal and at index " << wordIndex << " in the table" << endl;
 
 		if (firstPlay == false) 
@@ -513,10 +531,10 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				xStart = LetterToNumber(xStartLetter);
 
 				system("CLS");
-				playBoard.ShowBoard(Player1);
+				playBoard.ShowBoard(Player1, LetterBag);
 			}
 			system("CLS");
-			playBoard.ShowBoard(Player1);
+			playBoard.ShowBoard(Player1, LetterBag);
 
 			cout << "What is the Vertical start position of the word you want to play? (1 to 15)" << endl;
 			cin >> yStart;
@@ -525,10 +543,10 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please choose a Vertical position between 1 and 15: " << endl;
 				cin >> yStart;
 				system("CLS");
-				playBoard.ShowBoard(Player1);
+				playBoard.ShowBoard(Player1, LetterBag);
 			}
 			system("CLS");
-			playBoard.ShowBoard(Player1);
+			playBoard.ShowBoard(Player1, LetterBag);
 
 			cout << "What direction do you want to play your word? H for horizontal and V for vertical." << endl;
 			cin >> direction;
@@ -537,10 +555,10 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
 				cin >> direction;
 				system("CLS");
-				playBoard.ShowBoard(Player1);
+				playBoard.ShowBoard(Player1, LetterBag);
 			}
 			system("CLS");
-			playBoard.ShowBoard(Player1);
+			playBoard.ShowBoard(Player1, LetterBag);
 
 			if ((xStart + playedWord.length() > 15) && ((direction == 'h') || (direction == 'H')) || ((yStart + playedWord.length() > 15) && ((direction == 'v') || (direction == 'V'))))
 			{
@@ -564,22 +582,40 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 			else
 			{
 				bool testFlag = CheckLetterHand(Player1, playedWord);
-				if (testFlag == true) 
-				{ 
+				if (testFlag == true)
+				{
+					int amountOfLettersRemoved = 0;
 					for (int num = 0; num < (*Player1).PlayerHand.size(); num++)
 					{
 						int flag = 0;
-						for (int num2 = 0; num < playedWord.size(); num++)
+						for (int num2 = 0; num2 < playedWord.size(); num2++)
 						{
 							if ((playedWord[num2] == (*Player1).PlayerHand[num]) && flag == 0)
 							{
-								(*Player1).PlayerHand.erase((*Player1).PlayerHand.begin() + num);
+								cout << playedWord[num2] << " is " << (*Player1).PlayerHand[num];
+								cout << (*Player1).PlayerHand[num] << " used!" << endl;
+								(*Player1).PlayerHand[num] = NULL;
+								amountOfLettersRemoved++;
 								flag++;
+							}
+						}
+						for (int num3 = 0; num3 < 2; num3++)
+						{
+							if (amountOfLettersRemoved != playedWord.size())
+							{
+								for (int num3 = 0; num < (*Player1).PlayerHand.size(); num++)
+								{
+									if (((*Player1).PlayerHand[num3] == char(254)) && amountOfLettersRemoved != playedWord.size())
+									{
+										(*Player1).PlayerHand[num3] = NULL;
+										amountOfLettersRemoved++;
+									}
+								}
 							}
 						}
 
 					}
-				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1); 
+					playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1, LetterBag);
 				}
 			}
 
@@ -596,10 +632,10 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " Error, please type H for horizontal placement or V for vertical placement: " << endl;
 				cin >> direction;
 				system("CLS");
-				playBoard.ShowBoard(Player1);
+				playBoard.ShowBoard(Player1, LetterBag);
 			}
 			system("CLS");
-			playBoard.ShowBoard(Player1);
+			playBoard.ShowBoard(Player1, LetterBag);
 
 			if ((xStart + playedWord.length() > 15) && ((direction == 'h') || (direction == 'H')) || ((yStart + playedWord.length() > 15) && ((direction == 'v') || (direction == 'V'))))
 			{
@@ -616,23 +652,40 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 			}
 
 			bool testFlag = CheckLetterHand(Player1, playedWord);
-			if(testFlag == true){ 
-			for (int num = 0; num < playedWord.size(); num++)
+			if (testFlag == true)
 			{
-				int flag = 0;
-					for(int num2 = 0; num2 < (*Player1).PlayerHand.size(); num2++)
+				int amountOfLettersRemoved = 0;
+				for (int num = 0; num < (*Player1).PlayerHand.size(); num++)
+				{
+					int flag = 0;
+					for (int num2 = 0; num2 < playedWord.size(); num2++)
 					{
-						if ((playedWord[num2] == (*Player1).PlayerHand[num] || flag == 0) ) 
+						if ((playedWord[num2] == (*Player1).PlayerHand[num]) && flag == 0)
 						{
+							cout << playedWord[num2] << " is " << (*Player1).PlayerHand[num];
+							cout << (*Player1).PlayerHand[num] << " used!" << endl;
 							(*Player1).PlayerHand[num] = NULL;
-
-							cout << "erased" << endl;
+							amountOfLettersRemoved++;
 							flag++;
 						}
 					}
-					
-			}
-				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1); 
+					for (int num3 = 0; num3 < 2; num3++)
+					{
+						if (amountOfLettersRemoved != playedWord.size())
+						{
+							for (int num3 = 0; num < (*Player1).PlayerHand.size(); num++)
+							{
+								if (((*Player1).PlayerHand[num3] == char(254)) && amountOfLettersRemoved != playedWord.size())
+								{
+									(*Player1).PlayerHand[num3] = NULL;
+									amountOfLettersRemoved++;
+								}
+							}
+						}
+					}
+
+				}
+				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1, LetterBag);
 			}
 
 			else
@@ -640,7 +693,8 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
 			}
 		}
-		Play(legalWords, letters, playBoard, false, LetterBag, Player1);
+		firstPlay = false;
+		Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
 	}
 	
 }
@@ -1014,3 +1068,4 @@ bool CheckLetterHand(Player* Player1, string word)
 		return false;
 	}
 }
+
