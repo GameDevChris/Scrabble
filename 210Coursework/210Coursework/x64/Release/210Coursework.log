@@ -1,11 +1,11 @@
 ﻿  210Coursework.cpp
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(272,1): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(413,12): warning C4244:  'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(425,46): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\bodswor2\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(510,87): warning C4267:  'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Chris\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(273,1): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Chris\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(422,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Chris\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(434,46): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Chris\Desktop\210Coursework\210Coursework\210Coursework\210Coursework.cpp(527,87): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  1 of 566 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  5 of 523 functions ( 1.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    4 functions had inline decision re-evaluated but remain unchanged
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  210Coursework.vcxproj -> C:\Users\bodswor2\Desktop\210Coursework\210Coursework\x64\Release\210Coursework.exe
+  210Coursework.vcxproj -> C:\Users\Chris\Desktop\210Coursework\210Coursework\x64\Release\210Coursework.exe

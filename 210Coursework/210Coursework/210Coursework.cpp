@@ -14,33 +14,45 @@
 
 using namespace std;
 
+//global int COUNT for animation
 int COUNT;
 
+//Classes
 class Board;
 class Tile;
 class Player;
 class BagOfLetters;
+
+//void Functions 
 void ParseFile(vector<tuple<string, int>>* legalWords);
-void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters *LetterBag, Player *Player1);
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters *LetterBag, Player *Player1, int playAmount);
 void DisplayList(vector<tuple<string, int>>* legalWords);
 void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count);
 void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count);
 void AssignWordValue(vector<tuple<string, int>>* legalWords);
 void FillLetterMap(map<char, int>& letters);
-int LetterToNumber(char letter);
 void TestAdjacency(Board playBoard);
-int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
-Tile CoordsToTile(Board playBoard, int x, int y);
-bool CheckLetterHand(Player* Player1, string word);
 
+//Functions that return int
+int LetterToNumber(char letter);
+int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end);
+
+//Function that returns Tile
+Tile CoordsToTile(Board playBoard, int x, int y);
+
+//Function that returns Boolean
+bool CheckLetterHand(Player* Player1, string word, vector<char>* intersectedLetters = NULL);
+
+//Struct of (x,y) coordinates
 struct Coords {
 	int x;
 	int y;
 };
 
+//Player class with PlayerHand vector of characters (each initialised at NULL), PlayerPoints int (initialised at 0) and MaxSize int (initialised at 7)
 class Player {
 public:
-	vector<char>PlayerHand{ NULL, NULL, NULL, NULL, NULL, NULL, NULL };// = { char(167), char(167), char(167), char(167), char(167), char(167), char(167) };
+	vector<char>PlayerHand{ NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 	int PlayerPoints;
 	int MaxSize = 7;
 	Player() {
@@ -48,6 +60,7 @@ public:
 	}
 };
 
+//BagofLetters class with a Letters vector of characters (initialised with each letter in scrabble and 2 blanks), ShuffleBag method and GiveLetter method (takes pointer to player and a index int as arguments)
 class BagOfLetters {
 public:
 	vector<char>Letters ={
@@ -123,6 +136,8 @@ public:
 
 };
 
+//Tile class with myCoordinates (initialised as x=0 and y=0), tileCharacter (initialised as char(254)), colourNo (number of colour, intialised as 7 (white)), tileValue (letter multiplier, initialised as 1), 
+//wordValue (word multiplier, initialised as 1), adjacentTile list of 4 coordinates (coordinates of adjacent tiles, each initialised as x=0 and y=0) and assignAdjacent method that assigns coordinates of adjacent tiles.
 class Tile {
 public:
 	Coords myCoordinates;
@@ -170,6 +185,11 @@ public:
 	}
 };
 
+//Board class with console handle (to manipulate console colours, initialised to standard output handle), tileList 2d [15][15] array of Tiles, 
+//FillBoard method that fills the tileList with tiles of different colour and value depending on their coordinates, ShowBoard method that displays the board (takes as arguments a pointer to Player1 and a pointer to LetterBag),
+//InsertWord method that inserts a word into the tileList (takes as arguments pointer to legalWords, pointer to letters map, word string, xStart and yStart ints, direction character, pointer to Player 1 and pointer to LetterBag),
+//CheckIntersection method that returns a boolean if a word is corectly intersection other words in tileList (takes as arguments word string, xStart and yStart ints, direction character, and pointer to a vector of intersectedLetters),
+//AssignAdjacency method that calls assignAdjacent for each tile in tileList.
 class Board {
 public:
 	HANDLE console;
@@ -261,11 +281,11 @@ public:
 		SetConsoleTextAttribute(console, 15);
 		cout << endl;
 		cout << "Player Tiles: " << "       " << "P1 Score: " << (*Player1).PlayerPoints << endl;
-		cout << "Amount of Tiles left in bag: " << (*LetterBag).Letters.size() << endl;
+		
 		for (int i = 0; i < (*Player1).PlayerHand.size(); i++) {
 			cout << (*Player1).PlayerHand[i] << " ";
 		}
-		cout << endl << endl;
+		cout << "       Amount of Tiles left in bag: " << (*LetterBag).Letters.size() << endl;
 	}
 	void InsertWord(vector<tuple<string, int>>* legalWords, map<char, int>* letters, string word, int xStart, int yStart, char direction, Player* Player1, BagOfLetters* LetterBag)
 	{
@@ -353,7 +373,7 @@ public:
 		cout << "The word " << word << " was placed at X= " << xStart << " and Y= " << yStart << endl;
 		cout << "The value of the played word is: " << wordValue << endl;
 	}
-	bool CheckIntersection(string word, int xStart, int yStart, char direction)
+	bool CheckIntersection(string word, int xStart, int yStart, char direction, vector<char>*intersectedLetters)
 	{
 		int intersectionCount = 0;
 		if (direction == 'v' || direction == 'V')
@@ -366,6 +386,10 @@ public:
 					if (tileList[(yStart - 1) + i][xStart - 1].tileCharacter != word[i])
 					{
 						return false;
+					}
+					else
+					{
+						(*intersectedLetters).push_back(tileList[(yStart - 1) + i][xStart - 1].tileCharacter);
 					}
 				}
 			}
@@ -381,6 +405,10 @@ public:
 					if (tileList[yStart - 1][(xStart - 1) + i].tileCharacter != word[i])
 					{
 						return false;
+					}
+					else
+					{
+						(*intersectedLetters).push_back(tileList[yStart - 1][(xStart - 1) + i].tileCharacter);
 					}
 				}
 			}
@@ -408,34 +436,34 @@ public:
 	}
 };
 
+//main function
 int main()
 {
-	srand(time(NULL));
+	//variables
+	Board playBoard;
 	BagOfLetters LetterBag;
 	Player Player1;
 	COUNT = 0;
-	//LoadAnimation();
 	bool isSorted = false;
 	map<char, int> LetterValues;
 	FillLetterMap(LetterValues);
 	vector<tuple<string, int>> myWords;
+	int plays;
+
+	//seeding random
+	srand(time(NULL));
 	ParseFile(&myWords);
-	cout << "Legal word list created" << endl;
-
 	MergeSort(&myWords, 0, myWords.size() - 1, 0);
-
-	cout << "Legal word list sorted" << endl;
 	AssignWordValue(&myWords);
-	cout << "Word values assigned" << endl;
-	cout << endl;
-	Board playBoard;
 	playBoard.FillBoard();
 	playBoard.AssignAdjacency();
-	//TestAdjacency(playBoard);
-	Play(&myWords, &LetterValues, playBoard, true, &LetterBag, &Player1);
 
+	cout << "How many plays do you want?:" << endl;
+	cin >> plays;
+	Play(&myWords, &LetterValues, playBoard, true, &LetterBag, &Player1, plays);
 }
 
+//Utility function that desplays each item in function, used for debug
 void DisplayList(vector<tuple<string, int>>* legalWords) 
 {
 	for (int i = 0; i < (*legalWords).size(); i++) 
@@ -444,6 +472,7 @@ void DisplayList(vector<tuple<string, int>>* legalWords)
 	}
 }
 
+//Function that parses list of words file
 void ParseFile(vector<tuple<string, int>>* legalWords)
 {
 	int amountOfWords = 0;
@@ -471,13 +500,17 @@ void ParseFile(vector<tuple<string, int>>* legalWords)
 	wordFile.close();
 }
 
-void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters *LetterBag, Player *Player1)
+
+//Play recursive function, the function takes as parameter a pointer to the list of legal words, a pointer to a map that gives lettervalue for a given character, a playBoard, a pointer to LetterBag, a pointer to Player1 and a int playAmount.
+void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board playBoard, bool firstPlay, BagOfLetters *LetterBag, Player *Player1, int playAmount)
 {
-	(*LetterBag).ShuffleBag();
-	for (int playAmount = 0; playAmount < 10; playAmount++)
+	//runs as long as there are still playAmounts
+	if(playAmount>0)
 	{
+		(*LetterBag).ShuffleBag();
+		//replaces NULL letters by random letters from the bag
 		for(int index = 0; index < (*Player1).PlayerHand.size(); index ++)
-		{ 
+			{ 
 			if((*Player1).PlayerHand[index] == NULL)
 			{
 				(*LetterBag).GiveLetter(Player1, index);
@@ -491,12 +524,17 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 		char xStartLetter;
 		int yStart;
 		char direction;
+		
+		cout << endl << "You have " << playAmount << " plays left!" << endl;
+
+		//Ask for word until the player enters a legal word
 		while (wordIndex == -1)
 		{
 			cout << endl;
 			cout << "What is the word that you want to play? (Or say PASS if unable to play)" << endl;
 			cin >> playedWord;
 
+			//to pass turn and reshuffle cards
 			if (playedWord == "PASS")
 			{
 				for (int i = 0; i < (*Player1).PlayerHand.size(); i++) 
@@ -504,7 +542,8 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 					(*LetterBag).Letters.push_back((*Player1).PlayerHand[i]);
 					(*Player1).PlayerHand[i] = NULL;
 				}
-				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
+				playAmount--;
+				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1, playAmount);
 			}
 
 			wordIndex = BoardBinarySearch(legalWords, playedWord, 0, ((*legalWords).size() - 1));
@@ -518,6 +557,7 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 		playBoard.ShowBoard(Player1, LetterBag);
 		cout << "The word is legal and at index " << wordIndex << " in the table" << endl;
 
+		//If this isn't the player's first turn
 		if (firstPlay == false) 
 		{
 			cout << "What is the Horizontal start position of the word you want to play? (A to O)" << endl;
@@ -571,56 +611,65 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 					cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit vertically at (" << xStart << ";" << yStart << ")" << endl;
 				}
 
-				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
+				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1, playAmount);
 			}
 
-			bool checkBool = playBoard.CheckIntersection(playedWord, xStart, yStart, direction);
+			vector<char>intersectedLetters;
+			bool checkBool = playBoard.CheckIntersection(playedWord, xStart, yStart, direction, &intersectedLetters);
 			if (checkBool == false)
 			{
 				cout << "You can't place that there, your word must have a valid intersection wih a previously played word." << endl;
 			}
 			else
 			{
-				bool testFlag = CheckLetterHand(Player1, playedWord);
+				bool testFlag = CheckLetterHand(Player1, playedWord, &intersectedLetters);
 				if (testFlag == true)
 				{
-					int amountOfLettersRemoved = 0;
-					for (int num = 0; num < (*Player1).PlayerHand.size(); num++)
-					{
-						int flag = 0;
-						for (int num2 = 0; num2 < playedWord.size(); num2++)
-						{
-							if ((playedWord[num2] == (*Player1).PlayerHand[num]) && flag == 0)
-							{
-								cout << playedWord[num2] << " is " << (*Player1).PlayerHand[num];
-								cout << (*Player1).PlayerHand[num] << " used!" << endl;
-								(*Player1).PlayerHand[num] = NULL;
-								amountOfLettersRemoved++;
-								flag++;
-							}
-						}
-						for (int num3 = 0; num3 < 2; num3++)
-						{
-							if (amountOfLettersRemoved != playedWord.size())
-							{
-								for (int num3 = 0; num < (*Player1).PlayerHand.size(); num++)
-								{
-									if (((*Player1).PlayerHand[num3] == char(254)) && amountOfLettersRemoved != playedWord.size())
-									{
-										(*Player1).PlayerHand[num3] = NULL;
-										amountOfLettersRemoved++;
-									}
-								}
-							}
-						}
+					int amountOfLettersFound = 0;
 
+					for (int i = 0; i < playedWord.size(); i++)
+					{
+						for (int j = 0; j < (*Player1).PlayerHand.size(); j++)
+						{
+							if (playedWord[i] == (*Player1).PlayerHand[j])
+							{
+								(*Player1).PlayerHand[j] = NULL;
+								amountOfLettersFound++;
+								break;
+							}
+						}
 					}
+					while (amountOfLettersFound != (playedWord.size()-intersectedLetters.size()))
+					{
+						for (int i = 0; i < (*Player1).PlayerHand.size(); i++)
+						{
+							if ((*Player1).PlayerHand[i] == char(254))
+							{
+								(*Player1).PlayerHand[i] = NULL;
+								amountOfLettersFound++;
+								break;
+							}
+						}
+					}
+					for (int i = 0; i < intersectedLetters.size(); i++) 
+					{
+						for(int j = 0; j < (*Player1).PlayerHand.size(); j++)
+						{
+							if((*Player1).PlayerHand[j] == NULL)
+							{
+								(*Player1).PlayerHand[j] = intersectedLetters[i];
+								break;
+							}
+						}
+					}
+					
 					playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1, LetterBag);
 				}
 			}
 
 		}
 		
+		//If this is the player's first turn
 		else
 		{ 
 			xStart = 8;
@@ -648,57 +697,61 @@ void Play(vector<tuple<string, int>>* legalWords, map<char, int>* letters, Board
 					cout << char(200) << "(" << char(248) << "^" << char(248) << ")" << char(188) << " The word won't fit vertically at (" << xStart << ";" << yStart << ")" << endl;
 				}
 
-				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
+				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1, playAmount);
 			}
 
 			bool testFlag = CheckLetterHand(Player1, playedWord);
 			if (testFlag == true)
 			{
-				int amountOfLettersRemoved = 0;
-				for (int num = 0; num < (*Player1).PlayerHand.size(); num++)
-				{
-					int flag = 0;
-					for (int num2 = 0; num2 < playedWord.size(); num2++)
-					{
-						if ((playedWord[num2] == (*Player1).PlayerHand[num]) && flag == 0)
-						{
-							cout << playedWord[num2] << " is " << (*Player1).PlayerHand[num];
-							cout << (*Player1).PlayerHand[num] << " used!" << endl;
-							(*Player1).PlayerHand[num] = NULL;
-							amountOfLettersRemoved++;
-							flag++;
-						}
-					}
-					for (int num3 = 0; num3 < 2; num3++)
-					{
-						if (amountOfLettersRemoved != playedWord.size())
-						{
-							for (int num3 = 0; num < (*Player1).PlayerHand.size(); num++)
-							{
-								if (((*Player1).PlayerHand[num3] == char(254)) && amountOfLettersRemoved != playedWord.size())
-								{
-									(*Player1).PlayerHand[num3] = NULL;
-									amountOfLettersRemoved++;
-								}
-							}
-						}
-					}
+				int amountOfLettersFound = 0;
 
+				for(int i= 0; i < playedWord.size(); i++)
+				{
+					for(int j = 0; j < (*Player1).PlayerHand.size(); j++)
+					{
+						if (playedWord[i] == (*Player1).PlayerHand[j])
+						{
+							(*Player1).PlayerHand[j] = NULL;
+							amountOfLettersFound ++;
+							break;
+						}
+					}
 				}
+				while (amountOfLettersFound != playedWord.size()) 
+				{
+					for(int i = 0; i < (*Player1).PlayerHand.size(); i++)
+					{
+						if((*Player1).PlayerHand[i] == char(254))
+						{
+							(*Player1).PlayerHand[i] = NULL;
+							amountOfLettersFound++;
+							break;
+						}	
+					}
+				}		
 				playBoard.InsertWord(legalWords, letters, playedWord, xStart, yStart, direction, Player1, LetterBag);
 			}
 
 			else
 			{
-				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
+				Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1, playAmount);
 			}
 		}
 		firstPlay = false;
-		Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1);
+		playAmount -= 1;
+		Play(legalWords, letters, playBoard, firstPlay, LetterBag, Player1, playAmount);
 	}
-	
+	//end
+	else
+	{
+		string randomSentence;
+		cout << endl << "You are out of plays, thanks for playing! What did you think? (This will not be recorded)" << endl;
+		cin >> randomSentence;
+		exit(0);
+	}	
 }
 
+//Binary search for word in legalWords list
 int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int begin, int end) 
 {
 	int middle = begin + (end - begin) / 2;
@@ -724,6 +777,7 @@ int BoardBinarySearch(vector<tuple<string, int>>* legalWords, string word, int b
 		
 }
 
+//Merge function coplimentary to mergeSort
 void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, int count) 
 {
 	int i, j, k;
@@ -777,6 +831,7 @@ void Merge(vector<tuple<string, int>>* legalWords, int begin, int end, int mid, 
 	
 }
 
+//MergeSort of list
 void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int count) 
 {
 	COUNT++;
@@ -794,6 +849,7 @@ void MergeSort(vector<tuple<string, int>>* legalWords, int begin, int end, int c
 	}
 }
 
+//Assign word value to each tuple 
 void AssignWordValue(vector<tuple<string, int>>* legalWords) 
 {
 	for (int i = 0; i < (*legalWords).size(); i++) 
@@ -839,6 +895,7 @@ void AssignWordValue(vector<tuple<string, int>>* legalWords)
 	}
 }
 
+//Fill map of letter values
 void FillLetterMap(map<char,int> &letters) 
 {
 	//1 value letters A, E, I, O, U, L, N, S, T, R
@@ -927,6 +984,7 @@ void FillLetterMap(map<char,int> &letters)
 	(letters)['Z'] = 10;
 }
 
+//Give value for any letter
 int LetterToNumber(char letter)
 {
 	int numberValue = 0;
@@ -993,6 +1051,7 @@ int LetterToNumber(char letter)
 	return numberValue;
 }
 
+//Utility function to test adjacency
 void TestAdjacency (Board playBoard)
 {
 	int x, y;
@@ -1010,35 +1069,48 @@ void TestAdjacency (Board playBoard)
 	cout << "down: " << playTile.adjacentTiles[3].x << ";" << playTile.adjacentTiles[3].y << endl;
 }
 
+//Give tile for any given coordinates
 Tile CoordsToTile(Board playBoard, int x, int y)
 {
 	return (playBoard.tileList[x][y]);
 }
 
-bool CheckLetterHand(Player* Player1, string word)
+//Check to see if the played word is in the players hand
+bool CheckLetterHand(Player* Player1, string word, vector<char>* intersectedLetters)
 {
 	int blankAmount = 0;
 	int flag = 0;
-	for(int num = 0; num< (*Player1).PlayerHand.size(); num++)
+	for(int i = 0; i< (*Player1).PlayerHand.size(); i++)
 	{
-		if((*Player1).PlayerHand[num] == char(254))
+		if((*Player1).PlayerHand[i] == char(254))
 		{
 			blankAmount++;
 		}
 	}
 
-	cout << "You have " << blankAmount << " blanks" << endl;
 	for(int i=0; i<word.size(); i++)
 	{
-		int found = 0;
+		bool found = false;
 		for(int j = 0; j < (*Player1).PlayerHand.size(); j++)
 		{
 			if((word[i]==(*Player1).PlayerHand[j]))
 			{
-				found++;
+				found = true;
+				break;
 			}
 		}
-		if (found > 0) 
+		if (found == false)
+		{
+			for (int k = 0; k < (*intersectedLetters).size(); k++)
+			{
+				if (word[i] == (*intersectedLetters)[k])
+				{
+					found++;
+					break;
+				}
+			}
+		}
+		if (found == true) 
 		{
 			flag++;
 		}
@@ -1047,7 +1119,7 @@ bool CheckLetterHand(Player* Player1, string word)
 	{
 		return true;
 	}
-
+	
 	else if(flag + blankAmount >= word.size())
 	{
 		char check;
